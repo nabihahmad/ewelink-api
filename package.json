@@ -1,0 +1,25 @@
+{
+  "name": "ewelink-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nabihahmad/ewelink-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nabihahmad/ewelink-api/issues"
+  },
+  "homepage": "https://github.com/nabihahmad/ewelink-api#readme",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "ewelink-api": "^3.1.1",
+    "express": "^4.18.1",
+    "node-cache": "^5.1.2"
+  }
+}
