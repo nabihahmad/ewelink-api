@@ -5,6 +5,7 @@ const https = require("https");
 const NodeCache = require("node-cache");
 const cache = new NodeCache();
 const ewelink = require('ewelink-api');
+const atob = require("atob");
 
 POWER_MEASURING_SWITCH_DEVICEID=process.env.POWER_MEASURING_SWITCH_DEVICEID;
 ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;
@@ -22,7 +23,7 @@ app.all('/ewelink', async (req, res) => {
 
 		const connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
-			password: atob(process.env.EWELINK_PASSWORD),
+			password: atob.atob(process.env.EWELINK_PASSWORD),
 			region: 'us',
 		});
 
