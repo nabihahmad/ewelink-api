@@ -103,7 +103,6 @@ app.all('/ewelink', async (req, res) => {
 		console.log("Script done!")
 		responseJson.status = "success";
 	} else {
-        iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 		console.log("Script disabled!")
 		responseJson.status = "disabled";
 	}
