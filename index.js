@@ -64,7 +64,8 @@ app.all('/ewelink', async (req, res) => {
 					} catch (e) {}
 				}
 
-				iftttWebhook({message: "Electricity is on"});
+				iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+                iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			}
 		} else if (!device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
@@ -91,7 +92,8 @@ app.all('/ewelink', async (req, res) => {
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
 					cache.set("offline_or_no_electricity", 1);
 					console("No electricity or network for 30 minutes");
-					iftttWebhook({message: "No electricity or network for 30 minutes"});
+					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+                    iftttWebhook({message: "No electricity or network for 30 minutes"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				} else if (offlineOrNoElectricityCount != null)
 					cache.set("offline_or_no_electricity", offlineOrNoElectricityCount + 1);
 				else
@@ -101,6 +103,7 @@ app.all('/ewelink', async (req, res) => {
 		console.log("Script done!")
 		responseJson.status = "success";
 	} else {
+        iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 		console.log("Script disabled!")
 		responseJson.status = "disabled";
 	}
@@ -109,13 +112,13 @@ app.all('/ewelink', async (req, res) => {
 })
 app.listen(process.env.PORT || 3000)
 
-function iftttWebhook(jsonData) {
+function iftttWebhook(jsonData, event, webhookKey) {
 	const data = JSON.stringify(jsonData);
 
 	const postOptions = {
 		hostname: 'maker.ifttt.com',
 		port: 443,
-		path: '/trigger/notification/json/with/key/' + process.env.IFTTT_WEBHOOK_KEY,
+		path: '/trigger/' + event + '/json/with/key/' + webhookKey,
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
