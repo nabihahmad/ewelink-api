@@ -60,7 +60,7 @@ app.all('/ewelink', async (req, res) => {
 				const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 				console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
 
-				if (process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "")	{
+				if (process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") {
 					try {
 						startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
 						if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
