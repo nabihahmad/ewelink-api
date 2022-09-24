@@ -149,7 +149,7 @@ app.post('/ewelink', async (req, res) => {
 	}
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
-})
+});
 app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -160,7 +160,7 @@ app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
-})
+});
 app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -170,7 +170,7 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	responseJson.enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
-})
+});
 app.listen(process.env.PORT || 3000)
 
 function iftttWebhook(jsonData, event, webhookKey) {
