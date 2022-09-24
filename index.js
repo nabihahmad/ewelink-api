@@ -14,19 +14,19 @@ WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
 app.all('/ewelink', async (req, res) => {
 	let responseJson = {};
 	if (process.env.DISABLE_SCRIPT == "false") {
-        const nowTime = new Date();
-        let hourOfDay = nowTime.getHours();
+		const nowTime = new Date();
+		let hourOfDay = nowTime.getHours();
 
-        let requestBody = req.body;
+		let requestBody = req.body;
 
-        let enableHeaterOnGenerator = requestBody.enableHeaterOnGenerator != null ? parseInt(requestBody.enableHeaterOnGenerator) : 0;
-        console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
+		let enableHeaterOnGenerator = requestBody.enableHeaterOnGenerator != null ? parseInt(requestBody.enableHeaterOnGenerator) : 0;
+		console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
 		let lastState = requestBody.lastState != null ? parseInt(requestBody.lastState) : 0;
 		console.log("lastState", lastState);
 
-        let offlineOrNoElectricityCount = requestBody.offlineOrNoElectricityCount != null ? parseInt(requestBody.offlineOrNoElectricityCount) : 0;
-        console.log("offlineOrNoElectricityCount", offlineOrNoElectricityCount);
+		let offlineOrNoElectricityCount = requestBody.offlineOrNoElectricityCount != null ? parseInt(requestBody.offlineOrNoElectricityCount) : 0;
+		console.log("offlineOrNoElectricityCount", offlineOrNoElectricityCount);
 
 		const connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
@@ -56,7 +56,7 @@ app.all('/ewelink', async (req, res) => {
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
 			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
-                responseJson.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+				responseJson.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 				const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 				console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
 
@@ -74,41 +74,41 @@ app.all('/ewelink', async (req, res) => {
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			}
 
-            const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-            console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-            if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
-                const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
-                console.log("Toggle WATER_PUMP_DEVICEID", status);
-            }
+			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+			console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+			if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+				console.log("Toggle WATER_PUMP_DEVICEID", status);
+			}
 		} else if (!device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = false;
-            responseJson.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+			responseJson.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 			console.log("No electricity");
 			if (lastState == 1) {
 				console.log("logElectricity 0 for state", lastState);
 				responseJson.lastState = 0; // cache.set("last_electricity_state", 0);
 			}
 
-            if (enableHeaterOnGenerator == 0) {
-    			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
-    			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
-    			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on") {
-    				const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
-    				console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
-    				iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-    				iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
-    			}
-            }
+			if (enableHeaterOnGenerator == 0) {
+				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
+				console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
+				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on") {
+					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
+					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+					iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+				}
+			}
 
-            if (hourOfDay < 3 && hourOfDay > 5) {
-                const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-                console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-                if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
-                    const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
-                    console.log("Toggle WATER_PUMP_DEVICEID", status);
-                }
-            }
+			if (hourOfDay < 3 && hourOfDay > 5) {
+				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_PUMP_DEVICEID", status);
+				}
+			}
 		} else if (!device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
@@ -116,14 +116,14 @@ app.all('/ewelink', async (req, res) => {
 				// offlineOrNoElectricityCount = cache.get("offline_or_no_electricity");
 				// console.log("offline_or_no_electricity", offlineOrNoElectricityCount);
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
-                    responseJson.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
+					responseJson.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
 					console("No electricity or network for 30 minutes");
 					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				} else if (offlineOrNoElectricityCount != null)
-                    responseJson.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1; // cache.set("offline_or_no_electricity", offlineOrNoElectricityCount + 1);
+					responseJson.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1; // cache.set("offline_or_no_electricity", offlineOrNoElectricityCount + 1);
 				else
-                    responseJson.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
+					responseJson.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
 			}
 		}
 		console.log("Script done!")
