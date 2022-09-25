@@ -30,6 +30,10 @@ app.post('/ewelink', async (req, res) => {
 		let enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
 		console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
+		// let enableWaterPumpOnGenerator = requestBody.enableWaterPumpOnGenerator != null ? parseInt(requestBody.enableWaterPumpOnGenerator) : 0;
+		let enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
+		console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
+
 		// let lastState = requestBody.lastState != null ? parseInt(requestBody.lastState) : 0;
 		let lastState = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.lastState != null ? electricityConfig.props.lastState : 0;
 		console.log("lastState", lastState);
@@ -112,7 +116,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (hourOfDay < 3 && hourOfDay > 5) {
+			if (!enableWaterPumpOnGenerator && hourOfDay < 3 && hourOfDay > 5) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
@@ -168,6 +172,27 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	let electricityConfig = await electricityDB.get("config");
 	responseJson.status = "success";
 	responseJson.enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
+	let responseJson = {};
+	let requestBody = req.body;
+	let enableWaterPumpOnGenerator = requestBody.enableWaterPumpOnGenerator != null ? parseInt(requestBody.enableWaterPumpOnGenerator) : 0;
+	console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
+
+	let electricityConfig = await electricityDB.set("config", {"enableWaterPumpOnGenerator": enableWaterPumpOnGenerator});
+	responseJson.status = "success";
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
+	let responseJson = {};
+	let requestBody = req.body;
+
+	let electricityConfig = await electricityDB.get("config");
+	responseJson.status = "success";
+	responseJson.enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
