@@ -69,10 +69,11 @@ app.post('/ewelink', async (req, res) => {
 				iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			}
+            electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+            
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
 			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
-				electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 				if (dayOfWeek != 5 && dayOfWeek != 6) {
 					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
@@ -132,7 +133,7 @@ app.post('/ewelink', async (req, res) => {
 				// console.log("offline_or_no_electricity", offlineOrNoElectricityCount);
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
 					electricityDBUpdate.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
-					console("No electricity or network for 30 minutes");
+					console.log("No electricity or network for 30 minutes");
 					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				} else if (offlineOrNoElectricityCount != null)
