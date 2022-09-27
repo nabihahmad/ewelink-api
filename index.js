@@ -69,8 +69,8 @@ app.post('/ewelink', async (req, res) => {
 				iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			}
-            electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
-            
+			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
 			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
@@ -117,7 +117,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 3 || hourOfDay > 5)) {
+			if (false && enableWaterPumpOnGenerator == 0 && (hourOfDay < 3 || hourOfDay > 5)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
@@ -132,7 +132,7 @@ app.post('/ewelink', async (req, res) => {
 				// offlineOrNoElectricityCount = cache.get("offline_or_no_electricity");
 				// console.log("offline_or_no_electricity", offlineOrNoElectricityCount);
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
-					electricityDBUpdate.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
+					electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 					console.log("No electricity or network for 30 minutes");
 					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
@@ -143,9 +143,9 @@ app.post('/ewelink', async (req, res) => {
 			}
 		}
 
-		if (Object.keys(electricityDBUpdate).length > 0) {
+		if (Object.keys(electricityDBUpdate).length > 0)
 			let electricityConfig = await electricityDB.set("config", electricityDBUpdate);
-		}
+
 		console.log("Script done!")
 		responseJson.status = "success";
 	} else {
