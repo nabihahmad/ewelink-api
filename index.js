@@ -117,7 +117,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (false && enableWaterPumpOnGenerator == 0 && (hourOfDay < 3 || hourOfDay > 5)) {
+			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 3 || hourOfDay > 5)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
@@ -144,7 +144,7 @@ app.post('/ewelink', async (req, res) => {
 		}
 
 		if (Object.keys(electricityDBUpdate).length > 0)
-			let electricityConfig = await electricityDB.set("config", electricityDBUpdate);
+			await electricityDB.set("config", electricityDBUpdate);
 
 		console.log("Script done!")
 		responseJson.status = "success";
