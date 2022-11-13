@@ -22,23 +22,17 @@ app.post('/ewelink', async (req, res) => {
 		let hourOfDay = nowTime.getHours();
 		let dayOfWeek = nowTime.getDay();
 
-		// let requestBody = req.body;
-
 		let electricityConfig = await electricityDB.get("config");
 
-		// let enableHeaterOnGenerator = requestBody.enableHeaterOnGenerator != null ? parseInt(requestBody.enableHeaterOnGenerator) : 0;
 		let enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
 		console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
-		// let enableWaterPumpOnGenerator = requestBody.enableWaterPumpOnGenerator != null ? parseInt(requestBody.enableWaterPumpOnGenerator) : 0;
 		let enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
 		console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
 
-		// let lastState = requestBody.lastState != null ? parseInt(requestBody.lastState) : 0;
 		let lastState = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.lastState != null ? electricityConfig.props.lastState : 0;
 		console.log("lastState", lastState);
 
-		// let offlineOrNoElectricityCount = requestBody.offlineOrNoElectricityCount != null ? parseInt(requestBody.offlineOrNoElectricityCount) : 0;
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
 		console.log("offlineOrNoElectricityCount", offlineOrNoElectricityCount);
 
@@ -74,12 +68,13 @@ app.post('/ewelink', async (req, res) => {
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
 			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
-				if (dayOfWeek != 5 && dayOfWeek != 6) {
+				// if (dayOfWeek != 5 && dayOfWeek != 6) {
 					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
-				}
+				// }
 
-				if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
+				// if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
+                if (process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
 					try {
 						startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
 						if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
@@ -129,8 +124,6 @@ app.post('/ewelink', async (req, res) => {
 			responseJson.online = false;
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			if (!power_measuring_switch_device.online) {
-				// offlineOrNoElectricityCount = cache.get("offline_or_no_electricity");
-				// console.log("offline_or_no_electricity", offlineOrNoElectricityCount);
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
 					electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 					console.log("No electricity or network for 30 minutes");
