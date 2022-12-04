@@ -17,7 +17,6 @@ WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
 app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
 	let electricityDBUpdate = {};
-    return;
 	if (process.env.DISABLE_SCRIPT == "false") {
 		const nowTime = new Date();
 		let hourOfDay = nowTime.getHours();
