@@ -17,6 +17,7 @@ WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
 app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
 	let electricityDBUpdate = {};
+    return;
 	if (process.env.DISABLE_SCRIPT == "false") {
 		const nowTime = new Date();
 		let hourOfDay = nowTime.getHours();
@@ -62,6 +63,8 @@ app.post('/ewelink', async (req, res) => {
 				electricityDBUpdate.lastState = 1; // cache.set("last_electricity_state", 1);
 				iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+                iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
+                iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 
@@ -101,6 +104,8 @@ app.post('/ewelink', async (req, res) => {
 				electricityDBUpdate.lastState = 0; // cache.set("last_electricity_state", 0);
 				iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+                iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
+                iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 
 			if (enableHeaterOnGenerator == 0) {
