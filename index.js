@@ -116,6 +116,8 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
+            if (enableWaterPumpOnGenerator == 0)
+                console.log("disable water pump on generator, current hour", hourOfDay, ((hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)));
 			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
