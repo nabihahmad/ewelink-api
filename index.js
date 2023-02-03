@@ -126,6 +126,7 @@ app.post('/ewelink', async (req, res) => {
 			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
+            console.log("No electricity or network");
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			if (!power_measuring_switch_device.online) {
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
