@@ -43,7 +43,7 @@ app.post('/ewelink', async (req, res) => {
 		});
 
 		/* get specific devide info */
-		const device = await connection.getDevice(ELECTRICITY_DEVICEID);
+		const electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
 
 		if (four_ch_pro_device.online && four_ch_pro_device.params.switches[2].switch == "on") {
@@ -53,7 +53,7 @@ app.post('/ewelink', async (req, res) => {
 		} else
 			responseJson.ch4_pro_toggled = false;
 
-		if (device.online && device.params.switch == "on") {
+		if (electricity_device.online && electricity_device.params.switch == "on") {
 			responseJson.online = true;
 			responseJson.electricity = true;
 			console.log("Electricity");
@@ -76,7 +76,7 @@ app.post('/ewelink', async (req, res) => {
 				// }
 
 				// if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
-                if (process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
+                if (false && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
 					try {
 						startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
 						if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
@@ -93,7 +93,7 @@ app.post('/ewelink', async (req, res) => {
 				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 				console.log("Toggle WATER_PUMP_DEVICEID", status);
 			}
-		} else if (!device.online && four_ch_pro_device.online) {
+		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = false;
 			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
@@ -116,7 +116,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 3 || hourOfDay > 5)) {
+			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
@@ -124,7 +124,7 @@ app.post('/ewelink', async (req, res) => {
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
 			}
-		} else if (!device.online && !four_ch_pro_device.online) {
+		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			if (!power_measuring_switch_device.online) {
