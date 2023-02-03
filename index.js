@@ -18,7 +18,7 @@ app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
 	let electricityDBUpdate = {};
 	if (process.env.DISABLE_SCRIPT == "false") {
-		const nowTime = new Date();
+		let nowTime = new Date();
         var beirutTimezone = nowTime.getTime() - (nowTime.getTimezoneOffset() * 60000);
         nowTime = new Date(beirutTimezone);
 		let hourOfDay = nowTime.getHours();
