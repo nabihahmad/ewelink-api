@@ -19,22 +19,22 @@ app.post('/ewelink', async (req, res) => {
 	let electricityDBUpdate = {};
 	if (process.env.DISABLE_SCRIPT == "false") {
 		const nowTime = new Date();
+        var beirutTimezone = nowTime.getTime() - (nowTime.getTimezoneOffset() * 60000);
+        nowTime = new Date(beirutTimezone);
 		let hourOfDay = nowTime.getHours();
 		let dayOfWeek = nowTime.getDay();
 
 		let electricityConfig = await electricityDB.get("config");
 
 		let enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
-		console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
 		let enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
-		console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
 
 		let lastState = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.lastState != null ? electricityConfig.props.lastState : 0;
-		console.log("lastState", lastState);
 
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
-		console.log("offlineOrNoElectricityCount", offlineOrNoElectricityCount);
+
+        console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
 
 		const connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
