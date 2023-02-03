@@ -18,9 +18,8 @@ app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
 	let electricityDBUpdate = {};
 	if (process.env.DISABLE_SCRIPT == "false") {
-		let nowTime = new Date();
-        var beirutTimezone = nowTime.getTime() - (nowTime.getTimezoneOffset() * 60000);
-        nowTime = new Date(beirutTimezone);
+		var beirutTimezone = (new Date()).getTime() + (120 * 60000);
+		const nowTime = new Date(beirutTimezone);
 		let hourOfDay = nowTime.getHours();
 		let dayOfWeek = nowTime.getDay();
 
@@ -34,7 +33,7 @@ app.post('/ewelink', async (req, res) => {
 
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
 
-        console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
+		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
 
 		const connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
@@ -62,8 +61,8 @@ app.post('/ewelink', async (req, res) => {
 				electricityDBUpdate.lastState = 1; // cache.set("last_electricity_state", 1);
 				iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
-                iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
-                iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
+				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
+				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 
@@ -76,7 +75,7 @@ app.post('/ewelink', async (req, res) => {
 				// }
 
 				// if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
-                if (false && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
+				if (false && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
 					try {
 						startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
 						if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
@@ -103,8 +102,8 @@ app.post('/ewelink', async (req, res) => {
 				electricityDBUpdate.lastState = 0; // cache.set("last_electricity_state", 0);
 				iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
-                iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
-                iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
+				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
+				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 
 			if (enableHeaterOnGenerator == 0) {
@@ -116,8 +115,8 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-            if (enableWaterPumpOnGenerator == 0)
-                console.log("disable water pump on generator, current hour", hourOfDay, ((hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)));
+			if (enableWaterPumpOnGenerator == 0)
+				console.log("disable water pump on generator, current hour", hourOfDay, ((hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)));
 			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
@@ -128,7 +127,7 @@ app.post('/ewelink', async (req, res) => {
 			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
-            console.log("No electricity or network");
+			console.log("No electricity or network");
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			if (!power_measuring_switch_device.online) {
 				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
