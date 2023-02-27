@@ -52,7 +52,8 @@ app.post('/ewelink', async (req, res) => {
 		} else
 			responseJson.ch4_pro_toggled = false;
 
-		if (electricity_device.online && electricity_device.params.switch == "on") {
+  // if (electricity_device.online && electricity_device.params.switch == "on") {
+  if (electricity_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = true;
 			console.log("Electricity");
@@ -66,6 +67,7 @@ app.post('/ewelink', async (req, res) => {
 			}
 			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 
+   if(electricity_device.params.switch == "on") {
 			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
 			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
@@ -91,6 +93,7 @@ app.post('/ewelink', async (req, res) => {
 			if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
 				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 				console.log("Toggle WATER_PUMP_DEVICEID", status);
+			}
 			}
 		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
