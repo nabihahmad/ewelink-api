@@ -13,6 +13,8 @@ POWER_MEASURING_SWITCH_DEVICEID=process.env.POWER_MEASURING_SWITCH_DEVICEID;
 ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;
 FOUR_CH_PRO_DEVICEID=process.env.FOUR_CH_PRO_DEVICEID;
 WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
+UPS_INPUT_DEVICEID=process.env.UPS_INPUT_DEVICEID;
+UPS_OUTPUT_DEVICEID=process.env.UPS_OUTPUT_DEVICEID;
 
 app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
@@ -33,6 +35,8 @@ app.post('/ewelink', async (req, res) => {
 
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
 
+		let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
+
 		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
 
 		const connection = new ewelink({
@@ -52,8 +56,8 @@ app.post('/ewelink', async (req, res) => {
 		} else
 			responseJson.ch4_pro_toggled = false;
 
-  // if (electricity_device.online && electricity_device.params.switch == "on") {
-  if (electricity_device.online) {
+		// if (electricity_device.online && electricity_device.params.switch == "on") {
+		if (electricity_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = true;
 			console.log("Electricity");
@@ -67,33 +71,33 @@ app.post('/ewelink', async (req, res) => {
 			}
 			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 
-   if(electricity_device.params.switch == "on") {
-			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
-			console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
-			if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
-				// if (dayOfWeek != 5 && dayOfWeek != 6) {
-					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
-					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
-				// }
+			if(electricity_device.params.switch == "on") {
+				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
+				console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
+				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
+					// if (dayOfWeek != 5 && dayOfWeek != 6) {
+						const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
+						console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+					// }
 
-				// if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
-				if (false && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
-					try {
-						startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
-						if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
-							const statusChannel = await connection.toggleDevice(FOUR_CH_PRO_DEVICEID, startChannel);
-							console.log("Toggle FOUR_CH_PRO_DEVICEID", statusChannel);
-						}
-					} catch (e) {}
+					// if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
+					if (false && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
+						try {
+							startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
+							if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
+								const statusChannel = await connection.toggleDevice(FOUR_CH_PRO_DEVICEID, startChannel);
+								console.log("Toggle FOUR_CH_PRO_DEVICEID", statusChannel);
+							}
+						} catch (e) {}
+					}
 				}
-			}
 
-			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-			console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-			if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
-				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
-				console.log("Toggle WATER_PUMP_DEVICEID", status);
-			}
+				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_PUMP_DEVICEID", status);
+				}
 			}
 		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
@@ -128,6 +132,17 @@ app.post('/ewelink', async (req, res) => {
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
 			}
+
+			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
+			if (ups_input_device.online && ups_input_device.params.switch == "on") {
+				if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
+					electricityDBUpdate.upsInputOnGeneratorCount = 0;
+					iftttWebhook({message: "UPS is charging on generator"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				} else if (upsInputOnGeneratorCount != null)
+					electricityDBUpdate.upsInputOnGeneratorCount = upsInputOnGeneratorCount + 1;
+				else
+					electricityDBUpdate.upsInputOnGeneratorCount = 1;
+			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
 			console.log("No electricity or network");
@@ -157,6 +172,7 @@ app.post('/ewelink', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+
 app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -168,6 +184,7 @@ app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+
 app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -178,6 +195,7 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+
 app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -189,6 +207,7 @@ app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+
 app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -199,6 +218,7 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+
 app.listen(process.env.PORT || 3000)
 
 function iftttWebhook(jsonData, event, webhookKey) {
