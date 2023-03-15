@@ -36,6 +36,7 @@ app.post('/ewelink', async (req, res) => {
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
 
 		let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
+		let upsInputOnElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnElectricityCount != null ? electricityConfig.props.upsInputOnElectricityCount : 0;
 
 		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
 
@@ -98,6 +99,17 @@ app.post('/ewelink', async (req, res) => {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
+			}
+
+			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
+			if (ups_input_device.online && ups_input_device.params.switch == "off") {
+				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
+					electricityDBUpdate.upsInputOnElectricityCount = 0;
+					iftttWebhook({message: "Charge UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				} else if (upsInputOnElectricityCount != null)
+					electricityDBUpdate.upsInputOnElectricityCount = upsInputOnElectricityCount + 1;
+				else
+					electricityDBUpdate.upsInputOnElectricityCount = 1;
 			}
 		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
