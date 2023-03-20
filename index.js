@@ -40,14 +40,25 @@ app.post('/ewelink', async (req, res) => {
 
 		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
 
-		const connection = new ewelink({
+		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
 			password: atob.atob(process.env.EWELINK_PASSWORD),
 			region: 'us',
 		});
 
 		/* get specific devide info */
-		const electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+		let electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+		if (electricity_device.error == 406) {
+			connection = new ewelink({
+				email: process.env.EWELINK_EMAIL,
+				password: atob.atob(process.env.EWELINK_PASSWORD),
+				region: 'eu',
+			});
+			electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+			if (electricity_device.error == 406) {
+				iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+			}
+		}
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
 
 		if (four_ch_pro_device.online && four_ch_pro_device.params.switches[2].switch == "on") {
