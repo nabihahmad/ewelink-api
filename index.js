@@ -168,19 +168,17 @@ app.post('/ewelink', async (req, res) => {
 			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
-			console.log("No electricity or network");
-			const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
-			if (!power_measuring_switch_device.online) {
-				if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
-					electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
-					console.log("No electricity or network for 30 minutes");
-					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-					iftttWebhook({message: "No electricity or network for 30 minutes"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
-				} else if (offlineOrNoElectricityCount != null)
-					electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1; // cache.set("offline_or_no_electricity", offlineOrNoElectricityCount + 1);
-				else
-					electricityDBUpdate.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
-			}
+			locationString = water_pump_switch_device.online ? "at home" : "in the building";
+			console.log("No electricity or network " + locationString);
+			if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
+				electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+				console.log("No electricity or network for 30 minutes " + locationString);
+				iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+			} else if (offlineOrNoElectricityCount != null)
+				electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1; // cache.set("offline_or_no_electricity", offlineOrNoElectricityCount + 1);
+			else
+				electricityDBUpdate.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
 		}
 
 		if (Object.keys(electricityDBUpdate).length > 0)
