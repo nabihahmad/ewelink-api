@@ -103,13 +103,12 @@ app.post('/ewelink', async (req, res) => {
 						} catch (e) {}
 					}
 				}
-
-				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
-					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
-					console.log("Toggle WATER_PUMP_DEVICEID", status);
-				}
+			}
+			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+			console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+			if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+				console.log("Toggle WATER_PUMP_DEVICEID", status);
 			}
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
