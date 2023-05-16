@@ -70,7 +70,6 @@ app.post('/ewelink', async (req, res) => {
 		} else
 			responseJson.ch4_pro_toggled = false;
 
-		// if (electricity_device.online && electricity_device.params.switch == "on") {
 		if (electricity_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = true;
