@@ -223,7 +223,7 @@ app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	let enableHeaterOnGenerator = requestBody.enableHeaterOnGenerator != null ? parseInt(requestBody.enableHeaterOnGenerator) : 0;
 	console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
-	let electricityConfig = await electricityDB.set("config", {"enableHeaterOnGenerator": enableHeaterOnGenerator});
+	await electricityDB.set("config", {"enableHeaterOnGenerator": enableHeaterOnGenerator});
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -231,7 +231,6 @@ app.post('/toggleHeaterOnGenerator', async (req, res) => {
 
 app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
-	let requestBody = req.body;
 
 	let electricityConfig = await electricityDB.get("config");
 	responseJson.status = "success";
@@ -246,7 +245,7 @@ app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let enableWaterPumpOnGenerator = requestBody.enableWaterPumpOnGenerator != null ? parseInt(requestBody.enableWaterPumpOnGenerator) : 0;
 	console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
 
-	let electricityConfig = await electricityDB.set("config", {"enableWaterPumpOnGenerator": enableWaterPumpOnGenerator});
+	await electricityDB.set("config", {"enableWaterPumpOnGenerator": enableWaterPumpOnGenerator});
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -254,7 +253,6 @@ app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 
 app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let responseJson = {};
-	let requestBody = req.body;
 
 	let electricityConfig = await electricityDB.get("config");
 	responseJson.status = "success";
@@ -269,7 +267,7 @@ app.post('/toggleUpsOnGenerator', async (req, res) => {
 	let enableUpsOnGenerator = requestBody.enableUpsOnGenerator != null ? parseInt(requestBody.enableUpsOnGenerator) : 0;
 	console.log("enableUpsOnGenerator", enableUpsOnGenerator);
 
-	let electricityConfig = await electricityDB.set("config", {"enableUpsOnGenerator": enableUpsOnGenerator});
+	await electricityDB.set("config", {"enableUpsOnGenerator": enableUpsOnGenerator});
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -277,7 +275,6 @@ app.post('/toggleUpsOnGenerator', async (req, res) => {
 
 app.get('/toggleUpsOnGenerator', async (req, res) => {
 	let responseJson = {};
-	let requestBody = req.body;
 
 	let electricityConfig = await electricityDB.get("config");
 	responseJson.status = "success";
