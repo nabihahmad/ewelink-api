@@ -31,14 +31,16 @@ app.post('/ewelink', async (req, res) => {
 
 		let enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
 
+		let enableUpsOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableUpsOnGenerator != null ? electricityConfig.props.enableUpsOnGenerator : 0;
+
 		let lastState = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.lastState != null ? electricityConfig.props.lastState : 0;
 
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
 
-		let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
-		let upsInputOnElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnElectricityCount != null ? electricityConfig.props.upsInputOnElectricityCount : 0;
+		// let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
+		// let upsInputOnElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnElectricityCount != null ? electricityConfig.props.upsInputOnElectricityCount : 0;
 
-		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, lastState, offlineOrNoElectricityCount);
+		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount);
 
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
@@ -112,7 +114,9 @@ app.post('/ewelink', async (req, res) => {
 			}
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
-			if (ups_input_device.online && ups_input_device.params.switch == "off") {
+			const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
+			if (ups_input_device.online && (ups_input_device.params.switch == "off" || ups_output_device.params.switch == "off")) {
+				/*
 				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
 					electricityDBUpdate.upsInputOnElectricityCount = 0;
 					iftttWebhook({message: "Charge UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
@@ -120,6 +124,14 @@ app.post('/ewelink', async (req, res) => {
 					electricityDBUpdate.upsInputOnElectricityCount = upsInputOnElectricityCount + 1;
 				else
 					electricityDBUpdate.upsInputOnElectricityCount = 1;
+				*/
+				if (ups_output_device == "off") {
+					await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
+					await sleep(2000);
+				}
+				if (ups_input_device == "off")
+					await connection.toggleDevice(UPS_INPUT_DEVICEID);
+				iftttWebhook({message: "Charging UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
 		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
@@ -156,14 +168,26 @@ app.post('/ewelink', async (req, res) => {
 			}
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
-			if (ups_input_device.online && ups_input_device.params.switch == "on") {
-				if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
-					electricityDBUpdate.upsInputOnGeneratorCount = 0;
-					iftttWebhook({message: "UPS is charging on generator"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-				} else if (upsInputOnGeneratorCount != null)
-					electricityDBUpdate.upsInputOnGeneratorCount = upsInputOnGeneratorCount + 1;
-				else
-					electricityDBUpdate.upsInputOnGeneratorCount = 1;
+			if (ups_input_device.online && !enableUpsOnGenerator) {
+				const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
+				if (ups_input_device.params.switch == "on" || ups_output_device == "on") {
+					/*
+					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
+						electricityDBUpdate.upsInputOnGeneratorCount = 0;
+						iftttWebhook({message: "UPS is charging on generator"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					} else if (upsInputOnGeneratorCount != null)
+						electricityDBUpdate.upsInputOnGeneratorCount = upsInputOnGeneratorCount + 1;
+					else
+						electricityDBUpdate.upsInputOnGeneratorCount = 1;
+					*/
+					if (ups_input_device == "on") {
+						await connection.toggleDevice(UPS_INPUT_DEVICEID);
+						await sleep(2000);
+					}
+					if (ups_output_device == "on")
+						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
+					iftttWebhook({message: "Stopping UPS charging on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				}
 			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
@@ -239,6 +263,29 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	res.send(JSON.stringify(responseJson));
 });
 
+app.post('/toggleUpsOnGenerator', async (req, res) => {
+	let responseJson = {};
+	let requestBody = req.body;
+	let enableUpsOnGenerator = requestBody.enableUpsOnGenerator != null ? parseInt(requestBody.enableUpsOnGenerator) : 0;
+	console.log("enableUpsOnGenerator", enableUpsOnGenerator);
+
+	let electricityConfig = await electricityDB.set("config", {"enableUpsOnGenerator": enableUpsOnGenerator});
+	responseJson.status = "success";
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+
+app.get('/toggleUpsOnGenerator', async (req, res) => {
+	let responseJson = {};
+	let requestBody = req.body;
+
+	let electricityConfig = await electricityDB.get("config");
+	responseJson.status = "success";
+	responseJson.enableUpsOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableUpsOnGenerator != null ? electricityConfig.props.enableUpsOnGenerator : 0;
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+
 app.listen(process.env.PORT || 3000)
 
 function iftttWebhook(jsonData, event, webhookKey) {
@@ -266,4 +313,10 @@ function iftttWebhook(jsonData, event, webhookKey) {
 
 	req.write(data)
 	req.end()
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 }
