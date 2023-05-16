@@ -124,11 +124,11 @@ app.post('/ewelink', async (req, res) => {
 				else
 					electricityDBUpdate.upsInputOnElectricityCount = 1;
 				*/
-				if (ups_output_device == "off") {
+				if (ups_output_device.params.switch == "off") {
 					await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
 					await sleep(2000);
 				}
-				if (ups_input_device == "off")
+				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
 				iftttWebhook({message: "Charging UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
@@ -169,7 +169,7 @@ app.post('/ewelink', async (req, res) => {
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
 			if (ups_input_device.online && !enableUpsOnGenerator) {
 				const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
-				if (ups_input_device.params.switch == "on" || ups_output_device == "on") {
+				if (ups_input_device.params.switch == "on" || ups_output_device.params.switch == "on") {
 					/*
 					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
 						electricityDBUpdate.upsInputOnGeneratorCount = 0;
@@ -179,11 +179,11 @@ app.post('/ewelink', async (req, res) => {
 					else
 						electricityDBUpdate.upsInputOnGeneratorCount = 1;
 					*/
-					if (ups_input_device == "on") {
+					if (ups_input_device.params.switch == "on") {
 						await connection.toggleDevice(UPS_INPUT_DEVICEID);
 						await sleep(2000);
 					}
-					if (ups_output_device == "on")
+					if (ups_output_device.params.switch == "on")
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
 					iftttWebhook({message: "Stopping UPS charging on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				}
