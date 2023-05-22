@@ -23,7 +23,7 @@ app.post('/ewelink', async (req, res) => {
 		var beirutTimezone = (new Date()).getTime() + (120 * 60000);
 		const nowTime = new Date(beirutTimezone);
 		let hourOfDay = nowTime.getHours();
-		let dayOfWeek = nowTime.getDay();
+		// let dayOfWeek = nowTime.getDay();
 
 		let electricityConfig = await electricityDB.get("config");
 
@@ -73,11 +73,13 @@ app.post('/ewelink', async (req, res) => {
 		if (electricity_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = true;
+			iftttMessage = "";
 			console.log("Electricity");
 			if (lastState == 0) {
 				console.log("logElectricity 1 for state", lastState);
 				electricityDBUpdate.lastState = 1; // cache.set("last_electricity_state", 1);
-				iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				// iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				iftttMessage = "Electricity is on";
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
 				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
@@ -130,17 +132,23 @@ app.post('/ewelink', async (req, res) => {
 				}
 				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
-				iftttWebhook({message: "Charging UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				// iftttWebhook({message: lastState == 0 ? "Electricity is on: Charging UPS on electricity" : "Charging UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				iftttMessage += (iftttMessage != "" ? ": " : "") + "Charging UPS on electricity";
+			}
+			if (iftttMessage != "") {
+				iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
 		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = false;
+			iftttMessage = "";
 			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
 			console.log("No electricity");
 			if (lastState == 1) {
 				console.log("logElectricity 0 for state", lastState);
 				electricityDBUpdate.lastState = 0; // cache.set("last_electricity_state", 0);
-				iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				// iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				iftttMessage = "Electricity is off";
 				iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
 				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
@@ -185,8 +193,12 @@ app.post('/ewelink', async (req, res) => {
 					}
 					if (ups_output_device.params.switch == "on")
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
-					iftttWebhook({message: "Stopping UPS charging on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					// iftttWebhook({message: lastState == 1 ? "Electricity is off: Stopping UPS charging on electricity" : "Stopping UPS charging on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					iftttMessage += (iftttMessage != "" ? ": " : "") + "Stopping UPS charging on electricity";
 				}
+			}
+			if (iftttMessage != "") {
+				iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
