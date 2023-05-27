@@ -49,7 +49,7 @@ app.post('/ewelink', async (req, res) => {
 				// iftttWebhook({message: "Operative: scheduler is working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 		} // else
 			// iftttWebhook({message: "First call " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-		console.log("Schedule status:", lastRunAt, nowTime, diffMs, diffMins);
+		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
 		await electricityDB.set("status", {"lastRunAt": nowTime.getTime()});
 
 		// let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
