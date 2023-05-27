@@ -37,6 +37,19 @@ app.post('/ewelink', async (req, res) => {
 
 		let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
 
+		let electricityStatus = await electricityDB.get("status");
+		let lastRunAt = electricityStatus != null && electricityStatus.props != null && electricityStatus.props.lastRunAt != null ? electricityStatus.props.lastRunAt : null;
+		if (lastRunAt != null) {
+			var diffMs = (nowTime - lastRunAt); // milliseconds between now & lastRunAt
+			var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
+			if (diffMins > 10)
+				iftttWebhook({message: "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+			else
+				iftttWebhook({message: "Operative: scheduler is working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+		} else
+			iftttWebhook({message: "First call " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+		await electricityDB.set("status", {"lastRunAt": nowTime.getTime()});
+
 		// let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
 		// let upsInputOnElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnElectricityCount != null ? electricityConfig.props.upsInputOnElectricityCount : 0;
 
