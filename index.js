@@ -10,11 +10,15 @@ const db = CyclicDb("prussian-blue-snail-tutuCyclicDB")
 const electricityDB = db.collection("electricity");
 
 POWER_MEASURING_SWITCH_DEVICEID=process.env.POWER_MEASURING_SWITCH_DEVICEID;
+POWER_MEASURING_DUALR3_DEVICEID=process.env.POWER_MEASURING_DUALR3_DEVICEID;
 ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;
 FOUR_CH_PRO_DEVICEID=process.env.FOUR_CH_PRO_DEVICEID;
+FOUR_CH_PROR3_DEVICEID=process.env.FOUR_CH_PROR3_DEVICEID;
 WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
 UPS_INPUT_DEVICEID=process.env.UPS_INPUT_DEVICEID;
 UPS_OUTPUT_DEVICEID=process.env.UPS_OUTPUT_DEVICEID;
+
+DUALR3_HEATER_SWITCH = 2;
 
 app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
@@ -45,10 +49,7 @@ app.post('/ewelink', async (req, res) => {
 			diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
 			if (diffMins > 10)
 				iftttWebhook({message: "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-			// else
-				// iftttWebhook({message: "Operative: scheduler is working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-		} // else
-			// iftttWebhook({message: "First call " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+		}
 		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
 		await electricityDB.set("status", {"lastRunAt": nowTime.getTime()});
 
@@ -92,22 +93,26 @@ app.post('/ewelink', async (req, res) => {
 			console.log("Electricity");
 			if (lastState == 0) {
 				console.log("logElectricity 1 for state", lastState);
-				electricityDBUpdate.lastState = 1; // cache.set("last_electricity_state", 1);
-				// iftttWebhook({message: "Electricity is on"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				electricityDBUpdate.lastState = 1;
 				iftttMessage = "Electricity is on";
 				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
 				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
-			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+			electricityDBUpdate.offlineOrNoElectricityCount = 0;
 
 			if(electricity_device.params.switch == "on") {
 				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 				console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.params.switch);
 				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
 					// if (dayOfWeek != 5 && dayOfWeek != 6) {
-						const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
-						console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+						if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "main") {
+							const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
+							console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+						} else {
+							const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
+							console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+						}
 					// }
 
 					// if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
@@ -147,7 +152,6 @@ app.post('/ewelink', async (req, res) => {
 				}
 				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
-				// iftttWebhook({message: lastState == 0 ? "Electricity is on: Charging UPS on electricity" : "Charging UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttMessage += (iftttMessage != "" ? ": " : "") + "Charging UPS on electricity";
 			}
 			if (iftttMessage != "") {
@@ -157,12 +161,11 @@ app.post('/ewelink', async (req, res) => {
 			responseJson.online = true;
 			responseJson.electricity = false;
 			iftttMessage = "";
-			electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+			electricityDBUpdate.offlineOrNoElectricityCount = 0;
 			console.log("No electricity");
 			if (lastState == 1) {
 				console.log("logElectricity 0 for state", lastState);
-				electricityDBUpdate.lastState = 0; // cache.set("last_electricity_state", 0);
-				// iftttWebhook({message: "Electricity is off"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				electricityDBUpdate.lastState = 0;
 				iftttMessage = "Electricity is off";
 				iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
@@ -175,6 +178,12 @@ app.post('/ewelink', async (req, res) => {
 				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+				}
+
+				const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
+				if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "on") {
+					const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
+					console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
 				}
 			}
 
@@ -208,7 +217,6 @@ app.post('/ewelink', async (req, res) => {
 					}
 					if (ups_output_device.params.switch == "on")
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
-					// iftttWebhook({message: lastState == 1 ? "Electricity is off: Stopping UPS charging on electricity" : "Stopping UPS charging on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					iftttMessage += (iftttMessage != "" ? ": " : "") + "Stopping UPS charging on electricity";
 				}
 			}
@@ -220,14 +228,14 @@ app.post('/ewelink', async (req, res) => {
 			locationString = water_pump_switch_device.online ? "at home" : "in the building";
 			console.log("No electricity or network " + locationString);
 			if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
-				electricityDBUpdate.offlineOrNoElectricityCount = 0; // cache.set("offline_or_no_electricity", 0);
+				electricityDBUpdate.offlineOrNoElectricityCount = 0;
 				console.log("No electricity or network for 30 minutes " + locationString);
 				iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			} else if (offlineOrNoElectricityCount != null)
-				electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1; // cache.set("offline_or_no_electricity", offlineOrNoElectricityCount + 1);
+				electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1;
 			else
-				electricityDBUpdate.offlineOrNoElectricityCount = 1; // cache.set("offline_or_no_electricity", 1);
+				electricityDBUpdate.offlineOrNoElectricityCount = 1;
 		}
 
 		if (Object.keys(electricityDBUpdate).length > 0)
