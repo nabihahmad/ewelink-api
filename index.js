@@ -75,6 +75,9 @@ app.post('/ewelink', async (req, res) => {
 			electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 			if (electricity_device.error == 406) {
 				iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				responseJson.status = "failed";
+				res.setHeader('Content-Type', 'application/json');
+				res.send(JSON.stringify(responseJson));
 			}
 		}
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
