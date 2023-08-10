@@ -61,23 +61,30 @@ app.post('/ewelink', async (req, res) => {
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
 			password: atob.atob(process.env.EWELINK_PASSWORD),
-			region: 'us',
+			APP_ID: process.env.EWELINK_APP_ID,
+			APP_SECRET: process.env.EWELINK_APP_SECRET,
 		});
-
-		/* get specific devide info */
 		let electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 		if (electricity_device.error == 406) {
 			connection = new ewelink({
 				email: process.env.EWELINK_EMAIL,
 				password: atob.atob(process.env.EWELINK_PASSWORD),
-				region: 'eu',
+				region: 'us',
 			});
 			electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 			if (electricity_device.error == 406) {
-				iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-				responseJson.status = "failed";
-				res.setHeader('Content-Type', 'application/json');
-				res.send(JSON.stringify(responseJson));
+				connection = new ewelink({
+					email: process.env.EWELINK_EMAIL,
+					password: atob.atob(process.env.EWELINK_PASSWORD),
+					region: 'eu',
+				});
+				electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+				if (electricity_device.error == 406) {
+					iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					responseJson.status = "failed";
+					res.setHeader('Content-Type', 'application/json');
+					res.send(JSON.stringify(responseJson));
+				}
 			}
 		}
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
