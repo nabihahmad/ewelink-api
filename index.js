@@ -146,7 +146,7 @@ app.post('/ewelink', async (req, res) => {
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
 			const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
-			if (ups_input_device.online && (ups_input_device.params.switch == "off" || ups_output_device.params.switch == "off")) {
+			if (ups_input_device.online && ups_output_device.online && (ups_input_device.params.switch == "off" || ups_output_device.params.switch == "off")) {
 				/*
 				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
 					electricityDBUpdate.upsInputOnElectricityCount = 0;
@@ -211,7 +211,7 @@ app.post('/ewelink', async (req, res) => {
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
 			if (ups_input_device.online && !enableUpsOnGenerator) {
 				const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
-				if (ups_input_device.params.switch == "on" || ups_output_device.params.switch == "on") {
+				if (ups_output_device.online && (ups_input_device.params.switch == "on" || ups_output_device.params.switch == "on")) {
 					/*
 					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
 						electricityDBUpdate.upsInputOnGeneratorCount = 0;
