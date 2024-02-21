@@ -47,8 +47,10 @@ app.post('/ewelink', async (req, res) => {
 		if (lastRunAt != null) {
 			diffMs = (nowTime - lastRunAt); // milliseconds between now & lastRunAt
 			diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
-			if (diffMins > 10)
-				iftttWebhook({message: "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+			if (diffMins > 10) {
+				pushoverNotification("Nabih-iPhone", "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime, 'Electicity Update');
+				// iftttWebhook({message: "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+			}
 		}
 		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
 		await electricityDB.set("status", {"lastRunAt": nowTime.getTime()});
@@ -80,7 +82,8 @@ app.post('/ewelink', async (req, res) => {
 				});
 				electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 				if (electricity_device.error == 406) {
-					iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					pushoverNotification('Nabih-iPhone', 'inoperative: authentication failed', 'ERROR');
+					// iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					responseJson.status = "failed";
 					res.setHeader('Content-Type', 'application/json');
 					res.send(JSON.stringify(responseJson));
@@ -105,9 +108,10 @@ app.post('/ewelink', async (req, res) => {
 				console.log("logElectricity 1 for state", lastState);
 				electricityDBUpdate.lastState = 1;
 				iftttMessage = "Electricity is on";
-				iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
-				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
-				iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
+				pushoverNotification('Nabih-iPhone', iftttMessage, 'Electricity Info');
+				// iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+				// iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
+				// iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 			electricityDBUpdate.offlineOrNoElectricityCount = 0;
 
@@ -150,7 +154,8 @@ app.post('/ewelink', async (req, res) => {
 				/*
 				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
 					electricityDBUpdate.upsInputOnElectricityCount = 0;
-					iftttWebhook({message: "Charge UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+					pushoverNotification('Nabih-iPhone', 'Charge UPS on electricity', 'Electricity Info');
+					// iftttWebhook({message: "Charge UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				} else if (upsInputOnElectricityCount != null)
 					electricityDBUpdate.upsInputOnElectricityCount = upsInputOnElectricityCount + 1;
 				else
@@ -165,7 +170,8 @@ app.post('/ewelink', async (req, res) => {
 				iftttMessage += (iftttMessage != "" ? ": " : "") + "Charging UPS on electricity";
 			}
 			if (iftttMessage != "") {
-				iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update');
+				// iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
 		} else if (!electricity_device.online && four_ch_pro_device.online) {
 			responseJson.online = true;
@@ -177,9 +183,10 @@ app.post('/ewelink', async (req, res) => {
 				console.log("logElectricity 0 for state", lastState);
 				electricityDBUpdate.lastState = 0;
 				iftttMessage = "Electricity is off";
-				iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
-				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
-				iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
+				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update');
+				// iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+				// iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
+				// iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 
 			if (enableHeaterOnGenerator == 0) {
@@ -215,7 +222,8 @@ app.post('/ewelink', async (req, res) => {
 					/*
 					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
 						electricityDBUpdate.upsInputOnGeneratorCount = 0;
-						iftttWebhook({message: "UPS is charging on generator"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+						pushoverNotification("Nabih-iPhone", 'UPS is charging on generator', 'Electicity Update');
+						// iftttWebhook({message: "UPS is charging on generator"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					} else if (upsInputOnGeneratorCount != null)
 						electricityDBUpdate.upsInputOnGeneratorCount = upsInputOnGeneratorCount + 1;
 					else
@@ -231,7 +239,8 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 			if (iftttMessage != "") {
-				iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update');
+				// iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
 		} else if (!electricity_device.online && !four_ch_pro_device.online) {
 			responseJson.online = false;
@@ -241,8 +250,9 @@ app.post('/ewelink', async (req, res) => {
 			if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
 				electricityDBUpdate.offlineOrNoElectricityCount = 0;
 				console.log("No electricity or network for 30 minutes " + locationString);
-				iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
-				iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
+				pushoverNotification("Nabih-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update');
+				// iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
+				// iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			} else if (offlineOrNoElectricityCount != null)
 				electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1;
 			else
@@ -337,6 +347,33 @@ function iftttWebhook(jsonData, event, webhookKey) {
 		hostname: 'maker.ifttt.com',
 		port: 443,
 		path: '/trigger/' + event + '/json/with/key/' + webhookKey,
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	}
+
+	const req = https.request(postOptions, res => {
+		res.on('data', d => {
+		})
+	});
+
+	req.on('error', error => {
+		console.error(error);
+		throw error;
+	})
+
+	req.write(data)
+	req.end()
+}
+
+function pushoverNotification(device, message, title) {
+	const data = JSON.stringify('{}');
+
+	const postOptions = {
+		hostname: 'api.pushover.net',
+		port: 443,
+		path: '/1/messages.json?token=' + process.env.PUSHOVER_TOKEN + '&user=' + process.env.PUSHOVER_USER + '&device=' + device + "&title=" + title + "&message=" + message,
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
