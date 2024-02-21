@@ -373,7 +373,7 @@ function pushoverNotification(device, message, title) {
 	const postOptions = {
 		hostname: 'api.pushover.net',
 		port: 443,
-		path: '/1/messages.json?token=' + process.env.PUSHOVER_TOKEN + '&user=' + process.env.PUSHOVER_USER + '&device=' + device + "&title=" + title + "&message=" + message,
+		path: '/1/messages.json?token=' + process.env.PUSHOVER_TOKEN + '&user=' + process.env.PUSHOVER_USER + '&device=' + encodeURIComponent(device) + '&title=' + encodeURIComponent(title) + '&message=' + encodeURIComponent(message),
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
