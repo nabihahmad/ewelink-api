@@ -108,7 +108,6 @@ app.post('/ewelink', async (req, res) => {
 				console.log("logElectricity 1 for state", lastState);
 				electricityDBUpdate.lastState = 1;
 				iftttMessage = "Electricity is on";
-				pushoverNotification('Nabih-iPhone', iftttMessage, 'Electricity Info');
 				pushoverNotification('Rohan-iPhone', iftttMessage, 'Electricity Info');
 				// iftttWebhook({message: "Electricity is on"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				// iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
@@ -184,7 +183,6 @@ app.post('/ewelink', async (req, res) => {
 				console.log("logElectricity 0 for state", lastState);
 				electricityDBUpdate.lastState = 0;
 				iftttMessage = "Electricity is off";
-				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update');
 				pushoverNotification("Rohan-iPhone", iftttMessage, 'Electicity Update');
 				// iftttWebhook({message: "Electricity is off"}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 				// iftttWebhook({message: "كهرباء الدولة غير متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_DAD);
