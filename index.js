@@ -91,6 +91,7 @@ app.post('/ewelink', async (req, res) => {
 			}
 		}
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
+		const four_ch_pro_r3_device = await connection.getDevice(FOUR_CH_PROR3_DEVICEID);
 
 		if (four_ch_pro_device.online && four_ch_pro_device.params.switches[2].switch == "on") {
 			const status = await connection.toggleDevice(FOUR_CH_PRO_DEVICEID, 3);
@@ -175,7 +176,7 @@ app.post('/ewelink', async (req, res) => {
 				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update', 'pushover');
 				// iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
-		} else if (!electricity_device.online && four_ch_pro_device.online) {
+		} else if (!electricity_device.online && four_ch_pro_r3_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = false;
 			iftttMessage = "";
@@ -246,7 +247,7 @@ app.post('/ewelink', async (req, res) => {
 				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update', 'gamelan');
 				// iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
-		} else if (!electricity_device.online && !four_ch_pro_device.online) {
+		} else if (!electricity_device.online && !four_ch_pro_r3_device.online) {
 			responseJson.online = false;
 			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 			locationString = water_pump_switch_device.online ? "at home" : "in the building";
