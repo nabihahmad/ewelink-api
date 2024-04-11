@@ -335,7 +335,7 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	res.send(JSON.stringify(responseJson));
 });
 
-app.post('/toggleWaterPumpOnElectricty', async (req, res) => {
+app.post('/toggleWaterPumpOnElectricity', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
 	let enableWaterPumpOnElectricty = requestBody.enableWaterPumpOnElectricty != null ? parseInt(requestBody.enableWaterPumpOnElectricty) : 0;
@@ -347,7 +347,7 @@ app.post('/toggleWaterPumpOnElectricty', async (req, res) => {
 	res.send(JSON.stringify(responseJson));
 });
 
-app.get('/toggleWaterPumpOnElectricty', async (req, res) => {
+app.get('/toggleWaterPumpOnElectricity', async (req, res) => {
 	let responseJson = {};
 
 	let electricityConfig = await electricityDB.get("config");
