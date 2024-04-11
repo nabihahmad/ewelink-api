@@ -148,10 +148,16 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
+			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 			if (enableWaterPumpOnElectricity == 1) {
-				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_PUMP_DEVICEID", status);
+				}
+			} else {
+				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
