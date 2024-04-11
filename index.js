@@ -15,6 +15,7 @@ ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;
 FOUR_CH_PRO_DEVICEID=process.env.FOUR_CH_PRO_DEVICEID;
 FOUR_CH_PROR3_DEVICEID=process.env.FOUR_CH_PROR3_DEVICEID;
 WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
+BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID=process.env.BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID;
 UPS_INPUT_DEVICEID=process.env.UPS_INPUT_DEVICEID;
 UPS_OUTPUT_DEVICEID=process.env.UPS_OUTPUT_DEVICEID;
 
@@ -34,6 +35,7 @@ app.post('/ewelink', async (req, res) => {
 		let enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
 
 		let enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
+		let enableWaterPumpOnElectricity = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnElectricity != null ? electricityConfig.props.enableWaterPumpOnElectricity : 0;
 
 		let enableUpsOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableUpsOnGenerator != null ? electricityConfig.props.enableUpsOnGenerator : 0;
 
@@ -92,6 +94,7 @@ app.post('/ewelink', async (req, res) => {
 		}
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
 		const four_ch_pro_r3_device = await connection.getDevice(FOUR_CH_PROR3_DEVICEID);
+		const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
 
 		if (four_ch_pro_device.online && four_ch_pro_device.params.switches[2].switch == "on") {
 			const status = await connection.toggleDevice(FOUR_CH_PRO_DEVICEID, 3);
@@ -144,14 +147,16 @@ app.post('/ewelink', async (req, res) => {
 					}
 				}
 			}
-			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-			console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-			if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
-				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
-				console.log("Toggle WATER_PUMP_DEVICEID", status);
+
+			if (enableWaterPumpOnElectricity == 1) {
+				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_PUMP_DEVICEID", status);
+				}
 			}
 
-			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
 			const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
 			if (ups_input_device.online && ups_output_device.online && (ups_input_device.params.switch == "off" || ups_output_device.params.switch == "off")) {
 				/*
@@ -176,7 +181,7 @@ app.post('/ewelink', async (req, res) => {
 				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update', 'pushover');
 				// iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
-		} else if (!electricity_device.online && four_ch_pro_r3_device.online) {
+		} else if (!electricity_device.online && ups_input_device.online && four_ch_pro_r3_device.online) {
 			responseJson.online = true;
 			responseJson.electricity = false;
 			iftttMessage = "";
@@ -218,6 +223,14 @@ app.post('/ewelink', async (req, res) => {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
+			} else if (enableWaterPumpOnGenerator == 1 && (hourOfDay >= 1 || hourOfDay <= 9)) {
+				const building_entrance_interior_lighting_device = await connection.getDevice(BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID);
+				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
+				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off" && building_entrance_interior_lighting_device && building_entrance_interior_lighting_device.switch == "off") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_PUMP_DEVICEID", status);
+				}
 			}
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
@@ -247,7 +260,7 @@ app.post('/ewelink', async (req, res) => {
 				pushoverNotification("Nabih-iPhone", iftttMessage, 'Electicity Update', 'gamelan');
 				// iftttWebhook({message: iftttMessage}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 			}
-		} else if (!electricity_device.online && !four_ch_pro_r3_device.online) {
+		} else if (!electricity_device.online && !ups_input_device.online && !four_ch_pro_r3_device.online) {
 			responseJson.online = false;
 			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 			locationString = water_pump_switch_device.online ? "at home" : "in the building";
@@ -318,6 +331,28 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let electricityConfig = await electricityDB.get("config");
 	responseJson.status = "success";
 	responseJson.enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+
+app.post('/toggleWaterPumpOnElectricty', async (req, res) => {
+	let responseJson = {};
+	let requestBody = req.body;
+	let enableWaterPumpOnElectricty = requestBody.enableWaterPumpOnElectricty != null ? parseInt(requestBody.enableWaterPumpOnElectricty) : 0;
+	console.log("enableWaterPumpOnElectricty", enableWaterPumpOnElectricty);
+
+	await electricityDB.set("config", {"enableWaterPumpOnElectricty": enableWaterPumpOnElectricty});
+	responseJson.status = "success";
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+
+app.get('/toggleWaterPumpOnElectricty', async (req, res) => {
+	let responseJson = {};
+
+	let electricityConfig = await electricityDB.get("config");
+	responseJson.status = "success";
+	responseJson.enableWaterPumpOnElectricty = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnElectricty != null ? electricityConfig.props.enableWaterPumpOnElectricty : 0;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
