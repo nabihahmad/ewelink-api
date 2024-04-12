@@ -60,7 +60,7 @@ app.post('/ewelink', async (req, res) => {
 		// let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
 		// let upsInputOnElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnElectricityCount != null ? electricityConfig.props.upsInputOnElectricityCount : 0;
 
-		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount);
+		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableWaterPumpOnElectricity, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount);
 
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
@@ -344,10 +344,10 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 app.post('/toggleWaterPumpOnElectricity', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
-	let enableWaterPumpOnElectricty = requestBody.enableWaterPumpOnElectricty != null ? parseInt(requestBody.enableWaterPumpOnElectricty) : 0;
-	console.log("enableWaterPumpOnElectricty", enableWaterPumpOnElectricty);
+	let enableWaterPumpOnElectricity = requestBody.enableWaterPumpOnElectricity != null ? parseInt(requestBody.enableWaterPumpOnElectricity) : 0;
+	console.log("enableWaterPumpOnElectricity", enableWaterPumpOnElectricity);
 
-	await electricityDB.set("config", {"enableWaterPumpOnElectricty": enableWaterPumpOnElectricty});
+	await electricityDB.set("config", {"enableWaterPumpOnElectricity": enableWaterPumpOnElectricity});
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -358,7 +358,7 @@ app.get('/toggleWaterPumpOnElectricity', async (req, res) => {
 
 	let electricityConfig = await electricityDB.get("config");
 	responseJson.status = "success";
-	responseJson.enableWaterPumpOnElectricty = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnElectricty != null ? electricityConfig.props.enableWaterPumpOnElectricty : 0;
+	responseJson.enableWaterPumpOnElectricity = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnElectricity != null ? electricityConfig.props.enableWaterPumpOnElectricity : 0;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
