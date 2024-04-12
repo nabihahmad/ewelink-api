@@ -16,6 +16,8 @@ BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID=process.env.BUILDING_ENTRANCE_INTER
 UPS_INPUT_DEVICEID=process.env.UPS_INPUT_DEVICEID;
 UPS_OUTPUT_DEVICEID=process.env.UPS_OUTPUT_DEVICEID;
 
+test();
+
 async function test() {
     var beirutTimezone = (new Date()).getTime() + (120 * 60000);
     const nowTime = new Date(beirutTimezone);
@@ -29,6 +31,7 @@ async function test() {
         APP_SECRET: process.env.EWELINK_APP_SECRET,
     });
     let electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+    console.log("1");
     if (electricity_device.error == 406) {
         connection = new ewelink({
             email: process.env.EWELINK_EMAIL,
@@ -36,6 +39,7 @@ async function test() {
             region: 'us',
         });
         electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+        console.log("2");
         if (electricity_device.error == 406) {
             connection = new ewelink({
                 email: process.env.EWELINK_EMAIL,
@@ -43,6 +47,7 @@ async function test() {
                 region: 'eu',
             });
             electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+            console.log("3");
             if (electricity_device.error == 406) {
                 pushoverNotification('Nabih-iPhone', 'inoperative: authentication failed', 'ERROR', 'none');
                 // iftttWebhook({message: "Inoperative: authentication failed"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
@@ -53,9 +58,39 @@ async function test() {
         }
     }
     const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-    console.log(water_pump_switch_device.online);
+    console.log(water_pump_switch_device.online, water_pump_switch_device.params.switch);
     const building_entrance_interior_lighting_device = await connection.getDevice(BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID);
     console.log(building_entrance_interior_lighting_device.online, building_entrance_interior_lighting_device.params.switch);
 }
 
-test();
+async function test1() {
+    var beirutTimezone = (new Date()).getTime() + (120 * 60000);
+    const nowTime = new Date(beirutTimezone);
+    let hourOfDay = nowTime.getHours();
+    console.log("hourOfDay", hourOfDay);
+
+    let connection = new ewelink({
+        email: process.env.EWELINK_EMAIL,
+        password: atob.atob(process.env.EWELINK_PASSWORD),
+        region: 'us',
+    });
+    electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+    console.log("2");
+    if (electricity_device.error == 406) {
+        connection = new ewelink({
+            email: process.env.EWELINK_EMAIL,
+            password: atob.atob(process.env.EWELINK_PASSWORD),
+            region: 'eu',
+        });
+        electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
+        console.log("3");
+        if (electricity_device.error == 406) {
+            console.log("error");
+            return;
+        }
+    }
+    const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+    console.log(water_pump_switch_device.online);
+    const building_entrance_interior_lighting_device = await connection.getDevice(BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID);
+    console.log(building_entrance_interior_lighting_device.online, building_entrance_interior_lighting_device.params.switch);
+}
