@@ -226,7 +226,7 @@ app.post('/ewelink', async (req, res) => {
 			} else if (enableWaterPumpOnGenerator == 1) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-				if ((hourOfDay >= 0 || hourOfDay <= 2) && (hourOfDay >= 5 || hourOfDay <= 6) && (hourOfDay >= 9 || hourOfDay <= 11) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+				if (((hourOfDay >= 0 && hourOfDay <= 2) || (hourOfDay >= 5 && hourOfDay <= 6) || (hourOfDay >= 9 && hourOfDay <= 11)) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 					pushoverNotification("Nabih-iPhone", "Water pump on", 'Electicity Update', 'bike');
