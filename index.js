@@ -227,7 +227,7 @@ app.post('/ewelink', async (req, res) => {
 				if ((hourOfDay >= 3 || hourOfDay <= 7) && (hourOfDay >= 10 || hourOfDay <= 12) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-				} else if ((hourOfDay < 3 || hourOfDay > 7) && (hourOfDay < 10 || hourOfDay > 12) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
+				} else if ((hourOfDay < 3 || (hourOfDay > 7 && hourOfDay < 10) || hourOfDay > 12) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
