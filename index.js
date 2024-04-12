@@ -15,7 +15,7 @@ ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;
 FOUR_CH_PRO_DEVICEID=process.env.FOUR_CH_PRO_DEVICEID;
 FOUR_CH_PROR3_DEVICEID=process.env.FOUR_CH_PROR3_DEVICEID;
 WATER_PUMP_DEVICEID=process.env.WATER_PUMP_DEVICEID;
-BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID=process.env.BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID;
+// BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID=process.env.BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID;
 UPS_INPUT_DEVICEID=process.env.UPS_INPUT_DEVICEID;
 UPS_OUTPUT_DEVICEID=process.env.UPS_OUTPUT_DEVICEID;
 
@@ -60,7 +60,7 @@ app.post('/ewelink', async (req, res) => {
 		// let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
 		// let upsInputOnElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnElectricityCount != null ? electricityConfig.props.upsInputOnElectricityCount : 0;
 
-		console.log("Running mode:", enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableWaterPumpOnElectricity, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount);
+		console.log("Running mode:", hourOfDay, enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableWaterPumpOnElectricity, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount);
 
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
@@ -148,14 +148,8 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-			if (enableWaterPumpOnElectricity == 1) {
-				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
-					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
-					console.log("Toggle WATER_PUMP_DEVICEID", status);
-				}
-			} else {
+			if (enableWaterPumpOnElectricity == 0) {
+				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
@@ -220,8 +214,6 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (enableWaterPumpOnGenerator == 0)
-				console.log("disable water pump on generator, current hour", hourOfDay, ((hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)));
 			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
@@ -229,11 +221,12 @@ app.post('/ewelink', async (req, res) => {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
-			} else if (enableWaterPumpOnGenerator == 1 && (hourOfDay >= 1 || hourOfDay <= 9)) {
-				const building_entrance_interior_lighting_device = await connection.getDevice(BUILDING_ENTRANCE_INTERIOR_LIGHTING_DEVICEID);
-				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
+			} else if (enableWaterPumpOnGenerator == 1) {
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.params.switch);
-				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "off" && building_entrance_interior_lighting_device && building_entrance_interior_lighting_device.switch == "off") {
+				if ((hourOfDay >= 3 || hourOfDay <= 7) && (hourOfDay >= 10 || hourOfDay <= 12) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_PUMP_DEVICEID", status);
+				} else if ((hourOfDay < 3 || hourOfDay > 7) && (hourOfDay < 10 || hourOfDay > 12) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 				}
