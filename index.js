@@ -46,37 +46,37 @@ app.post('/ewelink', async (req, res) => {
 		// let electricityConfig = await electricityDB.get("config");
 
 		// let enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
-		let enableHeaterOnGenerator = 0;
+		let enableHeaterOnGenerator = "0";
 		const getEnableHeaterOnGeneratorParams = {TableName: 'ewelink', Key: {id: {S: 'enableHeaterOnGenerator'}}};
 		const getEnableHeaterOnGeneratorData = await dynamodb.getItem(getEnableHeaterOnGeneratorParams).promise();
 		enableHeaterOnGenerator = getEnableHeaterOnGeneratorData.Item.state.N;
 
 		// let enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
-		let enableWaterPumpOnGenerator = 0;
+		let enableWaterPumpOnGenerator = "0";
 		const getEnableWaterPumpOnGeneratorParams = {TableName: 'ewelink', Key: {id: {S: 'enableWaterPumpOnGenerator'}}};
 		const getEnableWaterPumpOnGeneratorData = await dynamodb.getItem(getEnableWaterPumpOnGeneratorParams).promise();
 		enableWaterPumpOnGenerator = getEnableWaterPumpOnGeneratorData.Item.state.N;
 		
 		// let enableWaterPumpOnElectricity = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnElectricity != null ? electricityConfig.props.enableWaterPumpOnElectricity : 0;
-		let enableWaterPumpOnElectricity = 0;
+		let enableWaterPumpOnElectricity = "0";
 		const getEnableWaterPumpOnElectricityParams = {TableName: 'ewelink', Key: {id: {S: 'enableWaterPumpOnElectricity'}}};
 		const getEnableWaterPumpOnElectricityData = await dynamodb.getItem(getEnableWaterPumpOnElectricityParams).promise();
 		enableWaterPumpOnElectricity = getEnableWaterPumpOnElectricityData.Item.state.N;
 
 		// let enableUpsOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableUpsOnGenerator != null ? electricityConfig.props.enableUpsOnGenerator : 0;
-		let enableUpsOnGenerator = 0;
+		let enableUpsOnGenerator = "0";
 		const getEnableUpsOnGeneratorParams = {TableName: 'ewelink', Key: {id: {S: 'enableUpsOnGenerator'}}};
 		const getEnableUpsOnGeneratorData = await dynamodb.getItem(getEnableUpsOnGeneratorParams).promise();
 		enableUpsOnGenerator = getEnableUpsOnGeneratorData.Item.state.N;
 
 		// let lastState = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.lastState != null ? electricityConfig.props.lastState : 0;
-		let lastState = 0;
+		let lastState = "0";
 		const getLastStateParams = {TableName: 'ewelink', Key: {id: {S: 'lastState'}}};
 		const getLastStateData = await dynamodb.getItem(getLastStateParams).promise();
 		lastState = getLastStateData.Item.state.N;
 
 		// let offlineOrNoElectricityCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.offlineOrNoElectricityCount != null ? electricityConfig.props.offlineOrNoElectricityCount : 0;
-		let offlineOrNoElectricityCount = 0;
+		let offlineOrNoElectricityCount = "0";
 		const getOfflineOrNoElectricityCountParams = {TableName: 'ewelink', Key: {id: {S: 'offlineOrNoElectricityCount'}}};
 		const getOfflineOrNoElectricityCountData = await dynamodb.getItem(getOfflineOrNoElectricityCountParams).promise();
 		offlineOrNoElectricityCount = getOfflineOrNoElectricityCountData.Item.state.N;
@@ -99,7 +99,7 @@ app.post('/ewelink', async (req, res) => {
 		}
 		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
 		// await electricityDB.set("status", {"lastRunAt": nowTime.getTime()});
-		const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime() }}};
+		const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime().toString() }}};
 		dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
 
 		// let upsInputOnGeneratorCount = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.upsInputOnGeneratorCount != null ? electricityConfig.props.upsInputOnGeneratorCount : 0;
@@ -156,7 +156,7 @@ app.post('/ewelink', async (req, res) => {
 			if (lastState == 0) {
 				console.log("logElectricity 1 for state", lastState);
 				// electricityDBUpdate.lastState = 1;
-				dynamoDBUpdate.lastState = 1;
+				dynamoDBUpdate.lastState = "1";
 				iftttMessage = "Electricity is on";
 				pushoverNotification('Rohan-iPhone', iftttMessage, 'Electricity Info', 'pushover');
 				pushoverNotification("Asmahan-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
@@ -166,7 +166,7 @@ app.post('/ewelink', async (req, res) => {
 				// iftttWebhook({message: "كهرباء الدولة متوفرة"}, 'notification', process.env.IFTTT_WEBHOOK_KEY_MOM);
 			}
 			// electricityDBUpdate.offlineOrNoElectricityCount = 0;
-			dynamoDBUpdate.offlineOrNoElectricityCount = 0;
+			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 
 			if(electricity_device.params.switch == "on") {
 				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
@@ -210,15 +210,16 @@ app.post('/ewelink', async (req, res) => {
 				/*
 				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
 					// electricityDBUpdate.upsInputOnElectricityCount = 0;
-					dynamoDBUpdate.upsInputOnElectricityCount = 0;
+					dynamoDBUpdate.upsInputOnElectricityCount = "0";
 					pushoverNotification('Nabih-iPhone', 'Charge UPS on electricity', 'Electricity Info', 'pushover');
 					// iftttWebhook({message: "Charge UPS on electricity"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 				} else if (upsInputOnElectricityCount != null) {
 					// electricityDBUpdate.upsInputOnElectricityCount = upsInputOnElectricityCount + 1;
-					dynamoDBUpdate.upsInputOnElectricityCount = upsInputOnElectricityCount + 1;
+					let tmpVal = upsInputOnElectricityCount + 1;
+					dynamoDBUpdate.upsInputOnElectricityCount = tmpVal.toString();
 				} else {
 					// electricityDBUpdate.upsInputOnElectricityCount = 1;
-					dynamoDBUpdate.upsInputOnElectricityCount = 1;
+					dynamoDBUpdate.upsInputOnElectricityCount = "1";
 				}
 				*/
 				if (ups_output_device.params.switch == "off") {
@@ -238,12 +239,12 @@ app.post('/ewelink', async (req, res) => {
 			responseJson.electricity = false;
 			iftttMessage = "";
 			// electricityDBUpdate.offlineOrNoElectricityCount = 0;
-			dynamoDBUpdate.offlineOrNoElectricityCount = 0;
+			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 			console.log("No electricity");
 			if (lastState == 1) {
 				console.log("logElectricity 0 for state", lastState);
 				// electricityDBUpdate.lastState = 0;
-				dynamoDBUpdate.lastState = 0;
+				dynamoDBUpdate.lastState = "0";
 				iftttMessage = "Electricity is off";
 				pushoverNotification("Rohan-iPhone", iftttMessage, 'Electicity Update', 'gamelan');
 				pushoverNotification("Asmahan-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
@@ -297,15 +298,16 @@ app.post('/ewelink', async (req, res) => {
 					/*
 					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
 						// electricityDBUpdate.upsInputOnGeneratorCount = 0;
-						electricityDBUpdate.upsInputOnGeneratorCount = 0;
+						dynamoDBUpdate.upsInputOnGeneratorCount = "0";
 						pushoverNotification("Nabih-iPhone", 'UPS is charging on generator', 'Electicity Update', 'pushover');
 						// iftttWebhook({message: "UPS is charging on generator"}, 'notification', process.env.IFTTT_WEBHOOK_KEY);
 					} else if (upsInputOnGeneratorCount != null) {
 						// electricityDBUpdate.upsInputOnGeneratorCount = upsInputOnGeneratorCount + 1;
-						dynamoDBUpdate.upsInputOnGeneratorCount = upsInputOnGeneratorCount + 1;
+						let tmpVal = upsInputOnGeneratorCount + 1;
+						dynamoDBUpdate.upsInputOnGeneratorCount = tmpVal.toString();
 					} else {
 						// electricityDBUpdate.upsInputOnGeneratorCount = 1;
-						dynamoDBUpdate.upsInputOnGeneratorCount = 1;
+						dynamoDBUpdate.upsInputOnGeneratorCount = "1";
 					}
 					*/
 					if (ups_input_device.params.switch == "on") {
@@ -328,7 +330,7 @@ app.post('/ewelink', async (req, res) => {
 			console.log("No electricity or network " + locationString);
 			if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
 				// electricityDBUpdate.offlineOrNoElectricityCount = 0;
-				dynamoDBUpdate.offlineOrNoElectricityCount = 0;
+				dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 				console.log("No electricity or network for 30 minutes " + locationString);
 				pushoverNotification("Nabih-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
 				pushoverNotification("Rohan-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
@@ -336,10 +338,11 @@ app.post('/ewelink', async (req, res) => {
 				// iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			} else if (offlineOrNoElectricityCount != null) {
 				// electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1;
-				dynamoDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1;
+				let tmpVal = offlineOrNoElectricityCount + 1;
+				dynamoDBUpdate.offlineOrNoElectricityCount = tmpVal.toString();
 			} else {
 				// electricityDBUpdate.offlineOrNoElectricityCount = 1;
-				dynamoDBUpdate.offlineOrNoElectricityCount = 1;
+				dynamoDBUpdate.offlineOrNoElectricityCount = "1";
 			}
 		}
 
@@ -365,7 +368,7 @@ app.post('/ewelink', async (req, res) => {
 app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
-	let enableHeaterOnGenerator = requestBody.enableHeaterOnGenerator != null ? parseInt(requestBody.enableHeaterOnGenerator) : 0;
+	let enableHeaterOnGenerator = requestBody.enableHeaterOnGenerator != null ? requestBody.enableHeaterOnGenerator : "0";
 	console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
 	// await electricityDB.set("config", {"enableHeaterOnGenerator": enableHeaterOnGenerator});
@@ -394,7 +397,7 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
-	let enableWaterPumpOnGenerator = requestBody.enableWaterPumpOnGenerator != null ? parseInt(requestBody.enableWaterPumpOnGenerator) : 0;
+	let enableWaterPumpOnGenerator = requestBody.enableWaterPumpOnGenerator != null ? requestBody.enableWaterPumpOnGenerator : "0";
 	console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
 
 	// await electricityDB.set("config", {"enableWaterPumpOnGenerator": enableWaterPumpOnGenerator});
@@ -423,7 +426,7 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 app.post('/toggleWaterPumpOnElectricity', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
-	let enableWaterPumpOnElectricity = requestBody.enableWaterPumpOnElectricity != null ? parseInt(requestBody.enableWaterPumpOnElectricity) : 0;
+	let enableWaterPumpOnElectricity = requestBody.enableWaterPumpOnElectricity != null ? requestBody.enableWaterPumpOnElectricity : "0";
 	console.log("enableWaterPumpOnElectricity", enableWaterPumpOnElectricity);
 
 	// await electricityDB.set("config", {"enableWaterPumpOnElectricity": enableWaterPumpOnElectricity});
@@ -452,7 +455,7 @@ app.get('/toggleWaterPumpOnElectricity', async (req, res) => {
 app.post('/toggleUpsOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
-	let enableUpsOnGenerator = requestBody.enableUpsOnGenerator != null ? parseInt(requestBody.enableUpsOnGenerator) : 0;
+	let enableUpsOnGenerator = requestBody.enableUpsOnGenerator != null ? requestBody.enableUpsOnGenerator : "0";
 	console.log("enableUpsOnGenerator", enableUpsOnGenerator);
 
 	// await electricityDB.set("config", {"enableUpsOnGenerator": enableUpsOnGenerator});
