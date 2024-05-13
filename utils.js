@@ -57,8 +57,16 @@ function pushoverNotification(device, message, title, sound) {
 	req.end()
 }
 
+async function getDynamoDBConfigParam(key) {
+	const getValueParams = {TableName: 'ewelink', Key: {id: {S: key}}};
+	const getResultData = await dynamodb.getItem(getValueParams).promise();
+	return getResultData.Item.state.N;
+}
+
 function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 }
+
+module.exports = { iftttWebhook, pushoverNotification, getDynamoDBConfigParam, sleep };
