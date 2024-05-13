@@ -334,7 +334,7 @@ app.post('/ewelink', async (req, res) => {
 			const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 			locationString = water_pump_switch_device.online ? "at home" : "in the building";
 			console.log("No electricity or network " + locationString);
-			if (offlineOrNoElectricityCount != null && offlineOrNoElectricityCount == 6) {
+			if (offlineOrNoElectricityCount != null && parseInt(offlineOrNoElectricityCount) == 6) {
 				// electricityDBUpdate.offlineOrNoElectricityCount = 0;
 				dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 				console.log("No electricity or network for 30 minutes " + locationString);
@@ -344,7 +344,7 @@ app.post('/ewelink', async (req, res) => {
 				// iftttWebhook({message: "No electricity or network for 30 minutes " + locationString}, 'electricity', process.env.IFTTT_WEBHOOK_KEY_ROHAN);
 			} else if (offlineOrNoElectricityCount != null) {
 				// electricityDBUpdate.offlineOrNoElectricityCount = offlineOrNoElectricityCount + 1;
-				let tmpVal = offlineOrNoElectricityCount + 1;
+				let tmpVal = parseInt(offlineOrNoElectricityCount) + 1;
 				dynamoDBUpdate.offlineOrNoElectricityCount = tmpVal.toString();
 			} else {
 				// electricityDBUpdate.offlineOrNoElectricityCount = 1;
