@@ -10,10 +10,6 @@ AWS.config.update({
 // Create a new DynamoDB instance
 dynamodb = new AWS.DynamoDB();
 
-// const CyclicDb = require("cyclic-dynamodb")
-// const db = CyclicDb("prussian-blue-snail-tutuCyclicDB")
-// const electricityDB = db.collection("electricity");
-
 POWER_MEASURING_SWITCH_DEVICEID=process.env.POWER_MEASURING_SWITCH_DEVICEID;
 POWER_MEASURING_DUALR3_DEVICEID=process.env.POWER_MEASURING_DUALR3_DEVICEID;
 ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;
