@@ -32,7 +32,7 @@ app.post('/ewelink', async (req, res) => {
 			diffMs = (nowTime - lastRunAt); // milliseconds between now & lastRunAt
 			diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
 			if (diffMins > 10) {
-				pushoverNotification("Nabih-iPhone", "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime, 'Electicity Update', 'siren');
+				utils.pushoverNotification("Nabih-iPhone", "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime, 'Electicity Update', 'siren');
 			}
 		}
 		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
@@ -63,7 +63,7 @@ app.post('/ewelink', async (req, res) => {
 				});
 				electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 				if (electricity_device.error == 406) {
-					pushoverNotification('Nabih-iPhone', 'inoperative: authentication failed', 'ERROR', 'none');
+					utils.pushoverNotification('Nabih-iPhone', 'inoperative: authentication failed', 'ERROR', 'none');
 					responseJson.status = "failed";
 					res.setHeader('Content-Type', 'application/json');
 					res.send(JSON.stringify(responseJson));
@@ -90,10 +90,10 @@ app.post('/ewelink', async (req, res) => {
 				console.log("logElectricity 1 for state", lastState);
 				dynamoDBUpdate.lastState = "1";
 				notificationMessage = "Electricity is on";
-				pushoverNotification('Rohan-iPhone', notificationMessage, 'Electricity Info', 'pushover');
-				pushoverNotification("Asmahan-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
-				pushoverNotification("Ahmad-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
-				pushoverNotification("Amir-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
+				utils.pushoverNotification('Rohan-iPhone', notificationMessage, 'Electricity Info', 'pushover');
+				utils.pushoverNotification("Asmahan-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
+				utils.pushoverNotification("Ahmad-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
+				utils.pushoverNotification("Amir-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
 			}
 			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 
@@ -137,8 +137,8 @@ app.post('/ewelink', async (req, res) => {
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
-					pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
+					utils.pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
+					utils.pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
 				}
 			}
 
@@ -147,7 +147,7 @@ app.post('/ewelink', async (req, res) => {
 				/*
 				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
 					dynamoDBUpdate.upsInputOnElectricityCount = "0";
-					pushoverNotification('Nabih-iPhone', 'Charge UPS on electricity', 'Electricity Info', 'pushover');
+					utils.pushoverNotification('Nabih-iPhone', 'Charge UPS on electricity', 'Electricity Info', 'pushover');
 				} else if (upsInputOnElectricityCount != null) {
 					let tmpVal = upsInputOnElectricityCount + 1;
 					dynamoDBUpdate.upsInputOnElectricityCount = tmpVal.toString();
@@ -157,14 +157,14 @@ app.post('/ewelink', async (req, res) => {
 				*/
 				if (ups_output_device.params.switch == "off") {
 					await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
-					await sleep(2000);
+					await utils.sleep(2000);
 				}
 				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
 				notificationMessage += (notificationMessage != "" ? ": " : "") + "Charging UPS on electricity";
 			}
 			if (notificationMessage != "") {
-				pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'pushover');
+				utils.pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'pushover');
 			}
 		} else if (!electricity_device.online && ups_input_device.online && four_ch_pro_r3_device.online) {
 			responseJson.online = true;
@@ -176,10 +176,10 @@ app.post('/ewelink', async (req, res) => {
 				console.log("logElectricity 0 for state", lastState);
 				dynamoDBUpdate.lastState = "0";
 				notificationMessage = "Electricity is off";
-				pushoverNotification("Rohan-iPhone", notificationMessage, 'Electicity Update', 'gamelan');
-				pushoverNotification("Asmahan-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
-				pushoverNotification("Ahmad-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
-				pushoverNotification("Amir-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
+				utils.pushoverNotification("Rohan-iPhone", notificationMessage, 'Electicity Update', 'gamelan');
+				utils.pushoverNotification("Asmahan-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
+				utils.pushoverNotification("Ahmad-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
+				utils.pushoverNotification("Amir-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
 			}
 
 			if (enableHeaterOnGenerator == 0) {
@@ -204,8 +204,8 @@ app.post('/ewelink', async (req, res) => {
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
-					pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
+					utils.pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
+					utils.pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
 				}
 			} else if (enableWaterPumpOnGenerator == 1) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
@@ -213,13 +213,13 @@ app.post('/ewelink', async (req, res) => {
 				if (((hourOfDay >= 0 && hourOfDay <= 2) || (hourOfDay >= 5 && hourOfDay <= 6) || (hourOfDay >= 9 && hourOfDay <= 11)) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					pushoverNotification("Nabih-iPhone", "Water pump on", 'Electicity Update', 'bike');
-					pushoverNotification("Amir-Android", "تشغيل طرمبة الماء", "حالة الكهرباء", 'bike');
+					utils.pushoverNotification("Nabih-iPhone", "Water pump on", 'Electicity Update', 'bike');
+					utils.pushoverNotification("Amir-Android", "تشغيل طرمبة الماء", "حالة الكهرباء", 'bike');
 				} else if ((hourOfDay < 0 || (hourOfDay > 2 && hourOfDay < 5) || (hourOfDay > 6 && hourOfDay < 9) || hourOfDay > 11) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
-					pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
+					utils.pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
+					utils.pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
 				}
 			}
 
@@ -230,7 +230,7 @@ app.post('/ewelink', async (req, res) => {
 					/*
 					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
 						dynamoDBUpdate.upsInputOnGeneratorCount = "0";
-						pushoverNotification("Nabih-iPhone", 'UPS is charging on generator', 'Electicity Update', 'pushover');
+						utils.pushoverNotification("Nabih-iPhone", 'UPS is charging on generator', 'Electicity Update', 'pushover');
 					} else if (upsInputOnGeneratorCount != null) {
 						let tmpVal = upsInputOnGeneratorCount + 1;
 						dynamoDBUpdate.upsInputOnGeneratorCount = tmpVal.toString();
@@ -240,7 +240,7 @@ app.post('/ewelink', async (req, res) => {
 					*/
 					if (ups_input_device.params.switch == "on") {
 						await connection.toggleDevice(UPS_INPUT_DEVICEID);
-						await sleep(2000);
+						await utils.sleep(2000);
 					}
 					if (ups_output_device.params.switch == "on")
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
@@ -248,7 +248,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 			if (notificationMessage != "") {
-				pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'gamelan');
+				utils.pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'gamelan');
 			}
 		} else if (!electricity_device.online && !ups_input_device.online && !four_ch_pro_r3_device.online) {
 			responseJson.online = false;
@@ -258,8 +258,8 @@ app.post('/ewelink', async (req, res) => {
 			if (offlineOrNoElectricityCount != null && parseInt(offlineOrNoElectricityCount) == 6) {
 				dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 				console.log("No electricity or network for 30 minutes " + locationString);
-				pushoverNotification("Nabih-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
-				pushoverNotification("Rohan-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
+				utils.pushoverNotification("Nabih-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
+				utils.pushoverNotification("Rohan-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
 			} else if (offlineOrNoElectricityCount != null) {
 				let tmpVal = parseInt(offlineOrNoElectricityCount) + 1;
 				dynamoDBUpdate.offlineOrNoElectricityCount = tmpVal.toString();
