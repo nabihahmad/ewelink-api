@@ -224,7 +224,7 @@ app.post('/ewelink', async (req, res) => {
 			}
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
-			if (ups_input_device.online && !enableUpsOnGenerator) {
+			if (ups_input_device.online && enableUpsOnGenerator == 0) {
 				const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
 				if (ups_output_device.online && (ups_input_device.params.switch == "on" || ups_output_device.params.switch == "on")) {
 					/*
