@@ -39,8 +39,7 @@ app.post('/ewelink', async (req, res) => {
 		const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime().toString() }}};
 		dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
 
-		console.log("Running mode:", hourOfDay, enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableWaterPumpOnElectricity, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount);
-
+		let loginMethod = "email + appId + secret";
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
 			password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -49,6 +48,7 @@ app.post('/ewelink', async (req, res) => {
 		});
 		let electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 		if (electricity_device.error == 406) {
+			loginMethod = "email US";
 			connection = new ewelink({
 				email: process.env.EWELINK_EMAIL,
 				password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -56,6 +56,7 @@ app.post('/ewelink', async (req, res) => {
 			});
 			electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 			if (electricity_device.error == 406) {
+				loginMethod = "email EU";
 				connection = new ewelink({
 					email: process.env.EWELINK_EMAIL,
 					password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -63,6 +64,7 @@ app.post('/ewelink', async (req, res) => {
 				});
 				electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 				if (electricity_device.error == 406) {
+					loginMethod = "failed";
 					utils.pushoverNotification('Nabih-iPhone', 'inoperative: authentication failed', 'ERROR', 'none');
 					responseJson.status = "failed";
 					res.setHeader('Content-Type', 'application/json');
@@ -70,6 +72,8 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 		}
+		console.log("Running mode:", hourOfDay, enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableWaterPumpOnElectricity, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount, loginMethod);
+		
 		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
 		const four_ch_pro_r3_device = await connection.getDevice(FOUR_CH_PROR3_DEVICEID);
 		const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
