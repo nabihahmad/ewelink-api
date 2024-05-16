@@ -39,7 +39,7 @@ app.post('/ewelink', async (req, res) => {
 		const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime().toString() }}};
 		dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
 
-		let loginMethod = "email + appId + secret";
+		let loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + appId + secret";
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
 			password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -48,7 +48,7 @@ app.post('/ewelink', async (req, res) => {
 		});
 		let electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 		if (electricity_device.error == 406) {
-			loginMethod = "email US";
+			loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + region us";
 			connection = new ewelink({
 				email: process.env.EWELINK_EMAIL,
 				password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -56,7 +56,7 @@ app.post('/ewelink', async (req, res) => {
 			});
 			electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 			if (electricity_device.error == 406) {
-				loginMethod = "email EU";
+				loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + region eu";
 				connection = new ewelink({
 					email: process.env.EWELINK_EMAIL,
 					password: atob.atob(process.env.EWELINK_PASSWORD),
