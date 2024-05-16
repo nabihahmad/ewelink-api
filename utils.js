@@ -63,10 +63,18 @@ async function getDynamoDBConfigParam(key) {
 	return getResultData.Item.state.N;
 }
 
+function getEmailDomain(email) {
+    const domainMatch = email.match(/@([^@]+)$/);
+    if (domainMatch && domainMatch[1]) {
+        return domainMatch[1];
+    }
+    return null;
+}
+
 function sleep(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 }
 
-module.exports = { iftttWebhook, pushoverNotification, getDynamoDBConfigParam, sleep };
+module.exports = { iftttWebhook, pushoverNotification, getDynamoDBConfigParam, getEmailDomain, sleep };
