@@ -141,8 +141,17 @@ app.post('/ewelink', async (req, res) => {
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					utils.pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
 					utils.pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
+				}
+			}
+
+			if (hourOfDay >= 7) {
+				const water_cooler_switch_device = await connection.getDevice(WATER_COOLER_DEVICEID);
+				if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "off") {
+					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					console.log("Toggle WATER_COOLER_DEVICEID", status);
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water cooler on";
 				}
 			}
 
@@ -208,7 +217,7 @@ app.post('/ewelink', async (req, res) => {
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					utils.pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
 					utils.pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
 				}
 			} else if (enableWaterPumpOnGenerator == 1) {
@@ -217,14 +226,21 @@ app.post('/ewelink', async (req, res) => {
 				if (((hourOfDay >= 0 && hourOfDay <= 2) || (hourOfDay >= 5 && hourOfDay <= 6) || (hourOfDay >= 9 && hourOfDay <= 11)) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					utils.pushoverNotification("Nabih-iPhone", "Water pump on", 'Electicity Update', 'bike');
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump on";
 					utils.pushoverNotification("Amir-Android", "تشغيل طرمبة الماء", "حالة الكهرباء", 'bike');
 				} else if ((hourOfDay < 0 || (hourOfDay > 2 && hourOfDay < 5) || (hourOfDay > 6 && hourOfDay < 9) || hourOfDay > 11) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
-					utils.pushoverNotification("Nabih-iPhone", "Water pump off", 'Electicity Update', 'bike');
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
 					utils.pushoverNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", 'bike');
 				}
+			}
+
+			const water_cooler_switch_device = await connection.getDevice(WATER_COOLER_DEVICEID);
+			if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "on") {
+				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+				console.log("Toggle WATER_COOLER_DEVICEID", status);
+				notificationMessage += (notificationMessage != "" ? ", " : "") + "Water cooler off";
 			}
 
 			const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
