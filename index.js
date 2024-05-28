@@ -74,16 +74,8 @@ app.post('/ewelink', async (req, res) => {
 		}
 		console.log("Running mode:", hourOfDay, enableHeaterOnGenerator, enableWaterPumpOnGenerator, enableWaterPumpOnElectricity, enableUpsOnGenerator, lastState, offlineOrNoElectricityCount, loginMethod);
 		
-		const four_ch_pro_device = await connection.getDevice(FOUR_CH_PRO_DEVICEID);
 		const four_ch_pro_r3_device = await connection.getDevice(FOUR_CH_PROR3_DEVICEID);
 		const ups_input_device = await connection.getDevice(UPS_INPUT_DEVICEID);
-
-		if (four_ch_pro_device.online && four_ch_pro_device.params.switches[2].switch == "on") {
-			const status = await connection.toggleDevice(FOUR_CH_PRO_DEVICEID, 3);
-			console.log("Status FOUR_CH_PRO_DEVICEID", status);
-			responseJson.ch4_pro_toggled = true;
-		} else
-			responseJson.ch4_pro_toggled = false;
 
 		if (electricity_device.online) {
 			responseJson.online = true;
@@ -149,7 +141,7 @@ app.post('/ewelink', async (req, res) => {
 			if (hourOfDay >= 7) {
 				const water_cooler_switch_device = await connection.getDevice(WATER_COOLER_DEVICEID);
 				if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "off") {
-					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+					const status = await connection.toggleDevice(WATER_COOLER_DEVICEID);
 					console.log("Toggle WATER_COOLER_DEVICEID", status);
 					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water cooler on";
 				}
@@ -238,7 +230,7 @@ app.post('/ewelink', async (req, res) => {
 
 			const water_cooler_switch_device = await connection.getDevice(WATER_COOLER_DEVICEID);
 			if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "on") {
-				const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
+				const status = await connection.toggleDevice(WATER_COOLER_DEVICEID);
 				console.log("Toggle WATER_COOLER_DEVICEID", status);
 				notificationMessage += (notificationMessage != "" ? ", " : "") + "Water cooler off";
 			}
