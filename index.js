@@ -166,7 +166,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
-				notificationMessage += (notificationMessage != "" ? ": " : "") + "Charging UPS on electricity";
+				notificationMessage += (notificationMessage != "" ? ", " : "") + "Charging UPS on electricity";
 			}
 			if (notificationMessage != "") {
 				utils.pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'pushover');
@@ -256,7 +256,7 @@ app.post('/ewelink', async (req, res) => {
 					}
 					if (ups_output_device.params.switch == "on")
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
-					notificationMessage += (notificationMessage != "" ? ": " : "") + "Stopping UPS charging on electricity";
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "Stopping UPS charging on electricity";
 				}
 			}
 			if (notificationMessage != "") {
