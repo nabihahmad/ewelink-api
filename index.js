@@ -138,7 +138,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (hourOfDay >= 7) {
+			if (hourOfDay >= 7 && hourOfDay < 22) {
 				const water_cooler_switch_device = await connection.getDevice(WATER_COOLER_DEVICEID);
 				if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "off") {
 					const status = await connection.toggleDevice(WATER_COOLER_DEVICEID);
