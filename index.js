@@ -210,7 +210,7 @@ app.post('/ewelink', async (req, res) => {
 				}
 			}
 
-			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12)) {
+			if (enableWaterPumpOnGenerator == 0 && (hourOfDay < 4 || hourOfDay > 6) && (hourOfDay < 10 || hourOfDay > 12) && (hourOfDay < 14 || hourOfDay > 16)) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
@@ -222,12 +222,12 @@ app.post('/ewelink', async (req, res) => {
 			} else if (enableWaterPumpOnGenerator == 1) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
 				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
-				if (((hourOfDay >= 0 && hourOfDay <= 2) || (hourOfDay >= 5 && hourOfDay <= 6) || (hourOfDay >= 9 && hourOfDay <= 11)) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
+				if (((hourOfDay >= 0 && hourOfDay <= 2) || (hourOfDay >= 5 && hourOfDay <= 6) || (hourOfDay >= 9 && hourOfDay <= 11) || (hourOfDay >= 13 && hourOfDay <= 15)) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "off") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump on";
 					utils.pushoverNotification("Amir-Android", "تشغيل طرمبة الماء", "حالة الكهرباء", 'bike');
-				} else if ((hourOfDay < 0 || (hourOfDay > 2 && hourOfDay < 5) || (hourOfDay > 6 && hourOfDay < 9) || hourOfDay > 11) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
+				} else if ((hourOfDay < 0 || (hourOfDay > 2 && hourOfDay < 5) || (hourOfDay > 6 && hourOfDay < 9) || (hourOfDay > 11 && hourOfDay < 13) || hourOfDay > 15) && water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
 					notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
