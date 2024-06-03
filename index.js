@@ -24,6 +24,7 @@ app.post('/ewelink', async (req, res) => {
 		let lastState = await utils.getDynamoDBConfigParam('lastState');
 		let offlineOrNoElectricityCount = await utils.getDynamoDBConfigParam('offlineOrNoElectricityCount');
 		let lastRunAt = await utils.getDynamoDBConfigParam('lastRunAt');
+		let upsDischargedAt = await utils.getDynamoDBConfigParam('upsDischargedAt');
 		// let upsInputOnGeneratorCount = await utils.getDynamoDBConfigParam('upsInputOnGeneratorCount');
 		// let upsInputOnElectricityCount = await utils.getDynamoDBConfigParam('upsInputOnElectricityCount');
 
@@ -36,8 +37,9 @@ app.post('/ewelink', async (req, res) => {
 			}
 		}
 		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
-		const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime().toString() }}};
-		dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
+		// const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime().toString() }}};
+		// dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
+		dynamoDBUpdate.lastRunAt = nowTime.getTime().toString();
 
 		let loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + appId + secret";
 		let connection = new ewelink({
@@ -166,7 +168,12 @@ app.post('/ewelink', async (req, res) => {
 				}
 				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
+				if (upsDischargedAt != 0)
+					dynamoDBUpdate.upsDischargedAt = "0";
 				notificationMessage += (notificationMessage != "" ? ", " : "") + "Charging UPS on electricity";
+			} else if (ups_input_device.online && !ups_output_device.online && upsDischargedAt == 0) {
+				dynamoDBUpdate.upsDischargedAt = nowTime.getTime().toString();
+				notificationMessage += (notificationMessage != "" ? ", " : "") + "UPS Discharged";
 			}
 			if (notificationMessage != "") {
 				utils.pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'pushover');
@@ -257,6 +264,9 @@ app.post('/ewelink', async (req, res) => {
 					if (ups_output_device.params.switch == "on")
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
 					notificationMessage += (notificationMessage != "" ? ", " : "") + "Stopping UPS charging on electricity";
+				} else if (ups_input_device.online && !ups_output_device.online && upsDischargedAt == 0) {
+					dynamoDBUpdate.upsDischargedAt = nowTime.getTime().toString();
+					notificationMessage += (notificationMessage != "" ? ", " : "") + "UPS Discharged";
 				}
 			}
 			if (notificationMessage != "") {
