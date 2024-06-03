@@ -174,6 +174,8 @@ app.post('/ewelink', async (req, res) => {
 			} else if (ups_input_device.online && !ups_output_device.online && upsDischargedAt == 0) {
 				dynamoDBUpdate.upsDischargedAt = nowTime.getTime().toString();
 				notificationMessage += (notificationMessage != "" ? ", " : "") + "UPS Discharged";
+			} else if (upsDischargedAt != 0 && ups_input_device.online && ups_output_device.online && (ups_input_device.params.switch == "on" && ups_output_device.params.switch == "on")) {
+				dynamoDBUpdate.upsDischargedAt = "0";
 			}
 			if (notificationMessage != "") {
 				utils.pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'pushover');
