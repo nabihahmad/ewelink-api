@@ -71,6 +71,7 @@ app.post('/ewelink', async (req, res) => {
 					responseJson.status = "failed";
 					res.setHeader('Content-Type', 'application/json');
 					res.send(JSON.stringify(responseJson));
+					return;
 				}
 			}
 		}
@@ -307,6 +308,7 @@ app.post('/ewelink', async (req, res) => {
 	}
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
+	return;
 });
 
 app.listen(process.env.PORT || 3000)
