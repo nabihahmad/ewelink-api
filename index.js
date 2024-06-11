@@ -138,7 +138,7 @@ app.post('/ewelink', async (req, res) => {
 
 			if (enableWaterPumpOnElectricity == 0) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-				console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
+				// console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
