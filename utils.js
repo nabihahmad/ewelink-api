@@ -63,6 +63,12 @@ async function getDynamoDBConfigParam(key) {
 	return getResultData.Item.state.N;
 }
 
+async function getDynamoDBConfigParamAsList(key) {
+	const getValueParams = {TableName: 'ewelink', Key: {id: {S: key}}};
+	const getResultData = await dynamodb.getItem(getValueParams).promise();
+	return getResultData.Item.state.L;
+}
+
 function getEmailDomain(email) {
     const domainMatch = email.match(/@([^@]+)$/);
     if (domainMatch && domainMatch[1]) {
@@ -77,4 +83,4 @@ function sleep(ms) {
     });
 }
 
-module.exports = { iftttWebhook, pushoverNotification, getDynamoDBConfigParam, getEmailDomain, sleep };
+module.exports = { iftttWebhook, pushoverNotification, getDynamoDBConfigParam, getDynamoDBConfigParamAsList, getEmailDomain, sleep };

@@ -25,6 +25,7 @@ app.post('/ewelink', async (req, res) => {
 		let offlineOrNoElectricityCount = await utils.getDynamoDBConfigParam('offlineOrNoElectricityCount');
 		let lastRunAt = await utils.getDynamoDBConfigParam('lastRunAt');
 		let upsDischargedAt = await utils.getDynamoDBConfigParam('upsDischargedAt');
+		let automatedAC = await utils.getDynamoDBConfigParamAsList('automatedAC');
 		// let upsInputOnGeneratorCount = await utils.getDynamoDBConfigParam('upsInputOnGeneratorCount');
 		// let upsInputOnElectricityCount = await utils.getDynamoDBConfigParam('upsInputOnElectricityCount');
 
@@ -41,7 +42,7 @@ app.post('/ewelink', async (req, res) => {
 		// dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
 		dynamoDBUpdate.lastRunAt = nowTime.getTime().toString();
 
-		let loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + appId + secret";
+		let loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + cred";
 		let connection = new ewelink({
 			email: process.env.EWELINK_EMAIL,
 			password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -50,7 +51,7 @@ app.post('/ewelink', async (req, res) => {
 		});
 		let electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 		if (electricity_device.error == 406) {
-			loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + region us";
+			loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + us";
 			connection = new ewelink({
 				email: process.env.EWELINK_EMAIL,
 				password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -58,7 +59,7 @@ app.post('/ewelink', async (req, res) => {
 			});
 			electricity_device = await connection.getDevice(ELECTRICITY_DEVICEID);
 			if (electricity_device.error == 406) {
-				loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + region eu";
+				loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + eu";
 				connection = new ewelink({
 					email: process.env.EWELINK_EMAIL,
 					password: atob.atob(process.env.EWELINK_PASSWORD),
@@ -97,37 +98,42 @@ app.post('/ewelink', async (req, res) => {
 			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 
 			if(electricity_device.params.switch == "on") {
-				// if (dayOfWeek != 5 && dayOfWeek != 6) {
-					if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "main") {
-						const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
-						console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.online ? power_measuring_switch_device.params.switch : "offline");
-						if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
-							const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
-							console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
-						}
-					} else if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "kitchen") {
-						const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
-						console.log("Switch POWER_MEASURING_DUALR3_DEVICEID", power_measuring_dualr3_device.online ? power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch : "offline");
-						if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "off") {
-							const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
-							console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
-						}
+				if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "main") {
+					const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
+					console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.online ? power_measuring_switch_device.params.switch : "offline");
+					if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "off") {
+						const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
+						notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated main heater on";
+						console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
 					}
-				// }
-				
-				/*
-				if (dayOfWeek != 0 && dayOfWeek != 5 && dayOfWeek != 6 && process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
-					if (process.env.START_4CH_PRO_CHANNEL != null && process.env.START_4CH_PRO_CHANNEL != "") { // TODO: replace with a DB toggle
-						try {
-							startChannel = parseInt(process.env.START_4CH_PRO_CHANNEL);
-							if (four_ch_pro_device.online && four_ch_pro_device.params.switches[startChannel-1].switch == "off") {
-								const statusChannel = await connection.toggleDevice(FOUR_CH_PRO_DEVICEID, startChannel);
-								console.log("Toggle FOUR_CH_PRO_DEVICEID", statusChannel);
-							}
-						} catch (e) {}
+				} else if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "kitchen") {
+					const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
+					console.log("Switch POWER_MEASURING_DUALR3_DEVICEID", power_measuring_dualr3_device.online ? power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch : "offline");
+					if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "off") {
+						const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
+						notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated kitchen heater on";
+						console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
 					}
 				}
-				*/
+
+				if (process.env.AUTOMATED_AC != null && process.env.AUTOMATED_AC == "true") {
+					for (let i = 0; automatedAC && i < automatedAC.length; i++) {
+						let tmpSwitch = automatedAC[i].S;
+						if (tmpSwitch == "KIDS") {
+							const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
+							console.log("Switch POWER_MEASURING_DUALR3_DEVICEID", power_measuring_dualr3_device.online ? power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch : "offline");
+							if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_KIDS_AC_SWITCH - 1].switch == "off") {
+								const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_KIDS_AC_SWITCH);
+								notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated Kids AC on";
+								console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_KIDS_AC_SWITCH, status);
+							}
+						} else if (tmpSwitch != "KIDS" && four_ch_pro_r3_device.online && four_ch_pro_r3_device.params.switches[tmpSwitch - 1].switch == "off") {
+							const status = await connection.toggleDevice(FOUR_CH_PROR3_DEVICEID, tmpSwitch);
+							notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated " + tmpSwitch + " AC on";
+							console.log("Toggle FOUR_CH_PROR3_DEVICEID channel " + tmpSwitch, status);
+						}
+					}
+				}
 			}
 
 			if (enableWaterPumpOnElectricity == 0) {
