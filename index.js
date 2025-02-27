@@ -206,7 +206,7 @@ app.post('/ewelink', async (req, res) => {
 				utils.pushoverNotification("Amir-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
 			}
 
-			if (enableHeaterOnGenerator == 0) {
+			if (enableHeaterOnGenerator == 0 || heaterTurnedOnAutomatically == 1) {
 				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 				// console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.online ? power_measuring_switch_device.params.switch : "offline");
 				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on" && heaterTurnedOnAutomatically == 1) {
