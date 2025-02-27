@@ -26,6 +26,7 @@ app.post('/ewelink', async (req, res) => {
 		let lastRunAt = await utils.getDynamoDBConfigParam('lastRunAt');
 		let upsDischargedAt = await utils.getDynamoDBConfigParam('upsDischargedAt');
 		let automatedAC = await utils.getDynamoDBConfigParamAsList('automatedAC');
+		let heaterTurnedOnAutomatically = await utils.getDynamoDBConfigParamAsList('heaterTurnedOnAutomatically');
 		// let upsInputOnGeneratorCount = await utils.getDynamoDBConfigParam('upsInputOnGeneratorCount');
 		// let upsInputOnElectricityCount = await utils.getDynamoDBConfigParam('upsInputOnElectricityCount');
 
@@ -105,6 +106,7 @@ app.post('/ewelink', async (req, res) => {
 						const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 						notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated main heater on";
 						console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+						dynamoDBUpdate.heaterTurnedOnAutomatically = "1";
 					}
 				} else if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "kitchen") {
 					const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
@@ -113,6 +115,7 @@ app.post('/ewelink', async (req, res) => {
 						const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
 						notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated kitchen heater on";
 						console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
+						dynamoDBUpdate.heaterTurnedOnAutomatically = "1";
 					}
 				}
 
@@ -206,16 +209,18 @@ app.post('/ewelink', async (req, res) => {
 			if (enableHeaterOnGenerator == 0) {
 				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
 				// console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.online ? power_measuring_switch_device.params.switch : "offline");
-				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on") {
+				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on" && heaterTurnedOnAutomatically == 1) {
 					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
+					dynamoDBUpdate.heaterTurnedOnAutomatically = "0";
 				}
 
 				const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
 				// console.log("Switch POWER_MEASURING_DUALR3_DEVICEID", power_measuring_dualr3_device.online ? power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch : "offline");
-				if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "on") {
+				if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "on" && heaterTurnedOnAutomatically == 1) {
 					const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
 					console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
+					dynamoDBUpdate.heaterTurnedOnAutomatically = "0";
 				}
 			}
 
