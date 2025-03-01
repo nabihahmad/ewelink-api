@@ -26,7 +26,7 @@ app.post('/ewelink', async (req, res) => {
 		let lastRunAt = await utils.getDynamoDBConfigParam('lastRunAt');
 		let upsDischargedAt = await utils.getDynamoDBConfigParam('upsDischargedAt');
 		let automatedAC = await utils.getDynamoDBConfigParamAsList('automatedAC');
-		let heaterTurnedOnAutomatically = await utils.getDynamoDBConfigParamAsList('heaterTurnedOnAutomatically');
+		let heaterTurnedOnAutomatically = await utils.getDynamoDBConfigParam('heaterTurnedOnAutomatically');
 		// let upsInputOnGeneratorCount = await utils.getDynamoDBConfigParam('upsInputOnGeneratorCount');
 		// let upsInputOnElectricityCount = await utils.getDynamoDBConfigParam('upsInputOnElectricityCount');
 
