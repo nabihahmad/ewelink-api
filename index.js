@@ -95,7 +95,7 @@ app.post('/ewelink', async (req, res) => {
 				utils.pushoverNotification("Asmahan-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
 				utils.pushoverNotification("Ahmad-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
 				utils.pushoverNotification("Amir-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
-				// utils.pushoverNotification("Haidar-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
+				utils.pushoverNotification("Tareq-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
 			}
 			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
 
@@ -205,7 +205,7 @@ app.post('/ewelink', async (req, res) => {
 				utils.pushoverNotification("Asmahan-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
 				utils.pushoverNotification("Ahmad-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
 				utils.pushoverNotification("Amir-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
-				// utils.pushoverNotification("Haidar-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
+				utils.pushoverNotification("Tareq-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
 			}
 
 			if (enableHeaterOnGenerator == 0 || heaterTurnedOnAutomatically == 1) {
