@@ -57,6 +57,23 @@ function pushoverNotification(device, message, title, sound) {
 	req.end()
 }
 
+async function getRedisConfigParam(key) {
+	await redisClient.connect();
+	const value = await redisClient.get(key);
+	await redisClient.quit();
+	return value;
+}
+
+async function initRedisDefaultConfigParams() {
+	await redisClient.connect();
+	await redisClient.set("enableHeaterOnGenerator", 0);
+	await redisClient.set("enableWaterPumpOnGenerator", 0);
+	await redisClient.set("enableWaterPumpOnElectricity", 0);
+	await redisClient.set("enableUpsOnGenerator", 0);
+	await redisClient.set("heaterTurnedOnAutomatically", 0);
+	await redisClient.quit();
+}
+
 async function getDynamoDBConfigParam(key) {
 	const getValueParams = {TableName: 'ewelink', Key: {id: {S: key}}};
 	const getResultData = await dynamodb.getItem(getValueParams).promise();
@@ -83,4 +100,4 @@ function sleep(ms) {
     });
 }
 
-module.exports = { iftttWebhook, pushoverNotification, getDynamoDBConfigParam, getDynamoDBConfigParamAsList, getEmailDomain, sleep };
+module.exports = { iftttWebhook, pushoverNotification, getRedisConfigParam, initRedisDefaultConfigParams, getDynamoDBConfigParam, getDynamoDBConfigParamAsList, getEmailDomain, sleep };

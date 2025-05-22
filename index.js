@@ -6,7 +6,6 @@ ewelink = require('ewelink-api');
 atob = require("atob");
 const utils = require('./utils.js');
 require('./config/config.js');
-require('./config/endpoints.js')
 require('./config/endpoints.js');
 
 app.post('/ewelink', async (req, res) => {
@@ -18,6 +17,25 @@ app.post('/ewelink', async (req, res) => {
 		let hourOfDay = nowTime.getHours();
 		// let dayOfWeek = nowTime.getDay();
 
+		let lastRunAt = await utils.getRedisConfigParam('lastRunAt');
+		if (lastRunAt == null) {
+			await utils.initRedisDefaultConfigParams();
+			utils.pushoverNotification("Nabih-iPhone", "Init Redis Config", 'Electicity Update', 'siren');
+		}
+		let enableHeaterOnGenerator = await utils.getRedisConfigParam('enableHeaterOnGenerator');
+		let enableWaterPumpOnGenerator = await utils.getRedisConfigParam('enableWaterPumpOnGenerator');
+		let enableWaterPumpOnElectricity = await utils.getRedisConfigParam('enableWaterPumpOnElectricity');
+		let enableUpsOnGenerator = await utils.getRedisConfigParam('enableUpsOnGenerator');
+		let lastState = await utils.getRedisConfigParam('lastState');
+		let offlineOrNoElectricityCount = await utils.getRedisConfigParam('offlineOrNoElectricityCount');
+		let upsDischargedAt = await utils.getRedisConfigParam('upsDischargedAt');
+		// let automatedAC = await utils.getRedisConfigParamAsList('automatedAC');
+		let automatedAC = null; // TODO: change type to store properly in redis
+		let heaterTurnedOnAutomatically = await utils.getRedisConfigParam('heaterTurnedOnAutomatically');
+		// let upsInputOnGeneratorCount = await utils.getRedisConfigParam('upsInputOnGeneratorCount');
+		// let upsInputOnElectricityCount = await utils.getRedisConfigParam('upsInputOnElectricityCount');
+
+		/*
 		let enableHeaterOnGenerator = await utils.getDynamoDBConfigParam('enableHeaterOnGenerator');
 		let enableWaterPumpOnGenerator = await utils.getDynamoDBConfigParam('enableWaterPumpOnGenerator');
 		let enableWaterPumpOnElectricity = await utils.getDynamoDBConfigParam('enableWaterPumpOnElectricity');
@@ -30,10 +48,11 @@ app.post('/ewelink', async (req, res) => {
 		let heaterTurnedOnAutomatically = await utils.getDynamoDBConfigParam('heaterTurnedOnAutomatically');
 		// let upsInputOnGeneratorCount = await utils.getDynamoDBConfigParam('upsInputOnGeneratorCount');
 		// let upsInputOnElectricityCount = await utils.getDynamoDBConfigParam('upsInputOnElectricityCount');
+		*/
 
 		let diffMs = 0, diffMins = 0;
 		if (lastRunAt != null) {
-			diffMs = (nowTime - lastRunAt); // milliseconds between now & lastRunAt
+			diffMs = (nowTime - parseInt(lastRunAt)); // milliseconds between now & lastRunAt
 			diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
 			if (diffMins > 10) {
 				utils.pushoverNotification("Nabih-iPhone", "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime, 'Electicity Update', 'siren');
@@ -308,10 +327,16 @@ app.post('/ewelink', async (req, res) => {
 		}
 
 		if (Object.keys(dynamoDBUpdate).length > 0) {
+			await redisClient.connect();
 			for (const [key, value] of Object.entries(dynamoDBUpdate)) {
+				/*
 				const putParams = {TableName: 'ewelink', Item: {id: { S: key }, state: { N: value }}};
 				dynamodb.putItem(putParams, (err) => {if (err) {console.error('Error writing item:', err);}});
+				*/
+				console.log("Set redis key: " + key, value);
+  				await redisClient.set(key, value);
 			}
+			await redisClient.quit();
 		}
 
 		console.log("Script done!")
