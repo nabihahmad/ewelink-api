@@ -1,3 +1,51 @@
+app.get('/redis', async (req, res) => {
+	let responseJson = {};
+	const key = req.query.key;
+	if (!key) {
+		responseJson.status = "error";
+		responseJson.message = "Missing 'key' query parameter";
+		res.setHeader('Content-Type', 'application/json');
+		res.status(400).send(JSON.stringify(responseJson));
+		return;
+	}
+	console.log("key", key);
+	await redisClient.connect();
+	console.log("connected", key);
+	const value = await redisClient.get(key);
+	console.log("value for key: " + key, value);
+	await redisClient.quit();
+	console.log("disconnected", key);
+	responseJson.status = "success";
+	responseJson.value = value;
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+
+app.post('/redis', async (req, res) => {
+	let responseJson = {};
+	const key = req.body.key;
+	const value = req.body.value;
+	if (!key || !value) {
+		responseJson.status = "error";
+		responseJson.message = "Missing 'key' or 'value' in request body";
+		res.setHeader('Content-Type', 'application/json');
+		res.status(400).send(JSON.stringify(responseJson));
+		return;
+	}
+	console.log("key", key);
+	console.log("value", value);
+	await redisClient.connect();
+	console.log("connected", key);
+	await redisClient.set(key, value);
+	console.log("set value for key: " + key, value);
+	await redisClient.quit();
+	console.log("disconnected", key);
+	responseJson.status = "success";
+	responseJson.message = "Value set successfully";
+	res.setHeader('Content-Type', 'application/json');
+	res.send(JSON.stringify(responseJson));
+});
+
 app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;

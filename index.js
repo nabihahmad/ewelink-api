@@ -7,6 +7,7 @@ atob = require("atob");
 const utils = require('./utils.js');
 require('./config/config.js');
 require('./config/endpoints.js')
+require('./config/endpoints.js');
 
 app.post('/ewelink', async (req, res) => {
 	let responseJson = {};

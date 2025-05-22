@@ -7,6 +7,13 @@ AWS.config.update({
     region: 'eu-central-1' // Frankfurt region
 });
 
+const { createClient } = require('redis');
+redisClient = createClient({
+  url: process.env.REDIS_URL
+});
+
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+
 // Create a new DynamoDB instance
 dynamodb = new AWS.DynamoDB();
 
