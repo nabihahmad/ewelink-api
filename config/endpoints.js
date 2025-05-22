@@ -55,8 +55,13 @@ app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	console.log("enableHeaterOnGenerator", enableHeaterOnGenerator);
 
 	// await electricityDB.set("config", {"enableHeaterOnGenerator": enableHeaterOnGenerator});
+	/*
 	const putHeaterOnGeneratorParams = {TableName: 'ewelink', Item: {id: { S: 'enableHeaterOnGenerator' }, state: { N: enableHeaterOnGenerator }}};
 	dynamodb.putItem(putHeaterOnGeneratorParams, (err) => {if (err) {console.error('Error writing enableHeaterOnGenerator:', err);}});
+	*/
+	await redisClient.connect();
+	await redisClient.set("enableHeaterOnGenerator", enableHeaterOnGenerator);
+	await redisClient.quit();
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -69,9 +74,14 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	responseJson.status = "success";
 	// responseJson.enableHeaterOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableHeaterOnGenerator != null ? electricityConfig.props.enableHeaterOnGenerator : 0;
 	let enableHeaterOnGenerator = 0;
+	/*
 	const getEnableHeaterOnGeneratorParams = {TableName: 'ewelink', Key: {id: {S: 'enableHeaterOnGenerator'}}};
 	const getEnableHeaterOnGeneratorData = await dynamodb.getItem(getEnableHeaterOnGeneratorParams).promise();
 	enableHeaterOnGenerator = getEnableHeaterOnGeneratorData.Item.state.N;
+	*/
+	await redisClient.connect();
+	enableHeaterOnGenerator = await redisClient.get("enableHeaterOnGenerator");
+	await redisClient.quit();
 	responseJson.enableHeaterOnGenerator = enableHeaterOnGenerator;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -142,8 +152,13 @@ app.post('/toggleUpsOnGenerator', async (req, res) => {
 	console.log("enableUpsOnGenerator", enableUpsOnGenerator);
 
 	// await electricityDB.set("config", {"enableUpsOnGenerator": enableUpsOnGenerator});
+	/*
 	const putUpsOnGeneratorParams = {TableName: 'ewelink', Item: {id: { S: 'enableUpsOnGenerator' }, state: { N: enableUpsOnGenerator }}};
 	dynamodb.putItem(putUpsOnGeneratorParams, (err) => {if (err) {console.error('Error writing enableUpsOnGenerator:', err);}});
+	*/
+	await redisClient.connect();
+	await redisClient.set("enableUpsOnGenerator", enableUpsOnGenerator);
+	await redisClient.quit();
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -156,9 +171,14 @@ app.get('/toggleUpsOnGenerator', async (req, res) => {
 	responseJson.status = "success";
 	// responseJson.enableUpsOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableUpsOnGenerator != null ? electricityConfig.props.enableUpsOnGenerator : 0;
 	let enableUpsOnGenerator = 0;
+	/*
 	const getEnableUpsOnGeneratorParams = {TableName: 'ewelink', Key: {id: {S: 'enableUpsOnGenerator'}}};
 	const getEnableUpsOnGeneratorData = await dynamodb.getItem(getEnableUpsOnGeneratorParams).promise();
 	enableUpsOnGenerator = getEnableUpsOnGeneratorData.Item.state.N;
+	*/
+	await redisClient.connect();
+	enableUpsOnGenerator = await redisClient.get("enableUpsOnGenerator");
+	await redisClient.quit();
 	responseJson.enableUpsOnGenerator = enableUpsOnGenerator;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
