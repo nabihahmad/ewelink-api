@@ -1,3 +1,4 @@
+/*
 app.get('/redis', async (req, res) => {
 	let responseJson = {};
 	const key = req.query.key;
@@ -45,6 +46,7 @@ app.post('/redis', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+*/
 
 app.post('/toggleHeaterOnGenerator', async (req, res) => {
 	let responseJson = {};

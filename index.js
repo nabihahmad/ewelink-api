@@ -10,7 +10,7 @@ require('./config/endpoints.js');
 
 app.post('/ewelink', async (req, res) => {
 	let responseJson = {};
-	let dynamoDBUpdate = {};
+	let redisUpdate = {};
 	if (process.env.DISABLE_SCRIPT == "false") {
 		var beirutTimezone = (new Date()).getTime() + (120 * 60000);
 		const nowTime = new Date(beirutTimezone);
@@ -59,9 +59,7 @@ app.post('/ewelink', async (req, res) => {
 			}
 		}
 		console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
-		// const putLastRunAtParams = {TableName: 'ewelink', Item: {id: { S: 'lastRunAt' }, state: { N: nowTime.getTime().toString() }}};
-		// dynamodb.putItem(putLastRunAtParams, (err) => {if (err) {console.error('Error writing lastRunAt:', err);}});
-		dynamoDBUpdate.lastRunAt = nowTime.getTime().toString();
+		redisUpdate.lastRunAt = nowTime.getTime().toString();
 
 		let loginMethod = utils.getEmailDomain(process.env.EWELINK_EMAIL) + " + cred";
 		let connection = new ewelink({
@@ -109,7 +107,7 @@ app.post('/ewelink', async (req, res) => {
 			console.log("Electricity");
 			if (lastState == 0) {
 				console.log("logElectricity 1 for state", lastState);
-				dynamoDBUpdate.lastState = "1";
+				redisUpdate.lastState = "1";
 				notificationMessage = "Electricity is on";
 				utils.pushoverNotification('Rohan-iPhone', notificationMessage, 'Electricity Info', 'pushover');
 				utils.pushoverNotification("Asmahan-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
@@ -117,7 +115,7 @@ app.post('/ewelink', async (req, res) => {
 				utils.pushoverNotification("Amir-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
 				utils.pushoverNotification("Tareq-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", 'pushover');
 			}
-			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
+			redisUpdate.offlineOrNoElectricityCount = "0";
 
 			if(electricity_device.params.switch == "on") {
 				if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "main") {
@@ -127,7 +125,7 @@ app.post('/ewelink', async (req, res) => {
 						const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 						notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated main heater on";
 						console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
-						dynamoDBUpdate.heaterTurnedOnAutomatically = "1";
+						redisUpdate.heaterTurnedOnAutomatically = "1";
 					}
 				} else if (process.env.AUTOMATED_HEATER != null && process.env.AUTOMATED_HEATER == "kitchen") {
 					const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
@@ -136,7 +134,7 @@ app.post('/ewelink', async (req, res) => {
 						const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
 						notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated kitchen heater on";
 						console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
-						dynamoDBUpdate.heaterTurnedOnAutomatically = "1";
+						redisUpdate.heaterTurnedOnAutomatically = "1";
 					}
 				}
 
@@ -184,13 +182,13 @@ app.post('/ewelink', async (req, res) => {
 			if (ups_input_device.online && ups_output_device.online && (ups_input_device.params.switch == "off" || ups_output_device.params.switch == "off")) {
 				/*
 				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
-					dynamoDBUpdate.upsInputOnElectricityCount = "0";
+					redisUpdate.upsInputOnElectricityCount = "0";
 					utils.pushoverNotification('Nabih-iPhone', 'Charge UPS on electricity', 'Electricity Info', 'pushover');
 				} else if (upsInputOnElectricityCount != null) {
 					let tmpVal = upsInputOnElectricityCount + 1;
-					dynamoDBUpdate.upsInputOnElectricityCount = tmpVal.toString();
+					redisUpdate.upsInputOnElectricityCount = tmpVal.toString();
 				} else {
-					dynamoDBUpdate.upsInputOnElectricityCount = "1";
+					redisUpdate.upsInputOnElectricityCount = "1";
 				}
 				*/
 				if (ups_output_device.params.switch == "off") {
@@ -200,13 +198,13 @@ app.post('/ewelink', async (req, res) => {
 				if (ups_input_device.params.switch == "off")
 					await connection.toggleDevice(UPS_INPUT_DEVICEID);
 				if (upsDischargedAt != 0)
-					dynamoDBUpdate.upsDischargedAt = "0";
+					redisUpdate.upsDischargedAt = "0";
 				notificationMessage += (notificationMessage != "" ? ", " : "") + "Charging UPS on electricity";
 			} else if (ups_input_device.online && !ups_output_device.online && upsDischargedAt == 0) {
-				dynamoDBUpdate.upsDischargedAt = nowTime.getTime().toString();
+				redisUpdate.upsDischargedAt = nowTime.getTime().toString();
 				notificationMessage += (notificationMessage != "" ? ", " : "") + "UPS Discharged";
 			} else if (upsDischargedAt != 0 && ups_input_device.online && ups_output_device.online && (ups_input_device.params.switch == "on" && ups_output_device.params.switch == "on")) {
-				dynamoDBUpdate.upsDischargedAt = "0";
+				redisUpdate.upsDischargedAt = "0";
 			}
 			if (notificationMessage != "") {
 				utils.pushoverNotification("Nabih-iPhone", notificationMessage, 'Electicity Update', 'pushover');
@@ -215,11 +213,11 @@ app.post('/ewelink', async (req, res) => {
 			responseJson.online = true;
 			responseJson.electricity = false;
 			notificationMessage = "";
-			dynamoDBUpdate.offlineOrNoElectricityCount = "0";
+			redisUpdate.offlineOrNoElectricityCount = "0";
 			console.log("No electricity");
 			if (lastState == 1) {
 				console.log("logElectricity 0 for state", lastState);
-				dynamoDBUpdate.lastState = "0";
+				redisUpdate.lastState = "0";
 				notificationMessage = "Electricity is off";
 				utils.pushoverNotification("Rohan-iPhone", notificationMessage, 'Electicity Update', 'gamelan');
 				utils.pushoverNotification("Asmahan-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", 'gamelan');
@@ -234,7 +232,7 @@ app.post('/ewelink', async (req, res) => {
 				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on" && heaterTurnedOnAutomatically == 1) {
 					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
-					dynamoDBUpdate.heaterTurnedOnAutomatically = "0";
+					redisUpdate.heaterTurnedOnAutomatically = "0";
 				}
 
 				const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
@@ -242,7 +240,7 @@ app.post('/ewelink', async (req, res) => {
 				if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "on" && heaterTurnedOnAutomatically == 1) {
 					const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
 					console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
-					dynamoDBUpdate.heaterTurnedOnAutomatically = "0";
+					redisUpdate.heaterTurnedOnAutomatically = "0";
 				}
 			}
 
@@ -284,13 +282,13 @@ app.post('/ewelink', async (req, res) => {
 				if (ups_output_device.online && (ups_input_device.params.switch == "on" || ups_output_device.params.switch == "on")) {
 					/*
 					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
-						dynamoDBUpdate.upsInputOnGeneratorCount = "0";
+						redisUpdate.upsInputOnGeneratorCount = "0";
 						utils.pushoverNotification("Nabih-iPhone", 'UPS is charging on generator', 'Electicity Update', 'pushover');
 					} else if (upsInputOnGeneratorCount != null) {
 						let tmpVal = upsInputOnGeneratorCount + 1;
-						dynamoDBUpdate.upsInputOnGeneratorCount = tmpVal.toString();
+						redisUpdate.upsInputOnGeneratorCount = tmpVal.toString();
 					} else {
-						dynamoDBUpdate.upsInputOnGeneratorCount = "1";
+						redisUpdate.upsInputOnGeneratorCount = "1";
 					}
 					*/
 					if (ups_input_device.params.switch == "on") {
@@ -301,7 +299,7 @@ app.post('/ewelink', async (req, res) => {
 						await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
 					notificationMessage += (notificationMessage != "" ? ", " : "") + "Stopping UPS charging on electricity";
 				} else if (ups_input_device.online && !ups_output_device.online && upsDischargedAt == 0) {
-					dynamoDBUpdate.upsDischargedAt = nowTime.getTime().toString();
+					redisUpdate.upsDischargedAt = nowTime.getTime().toString();
 					notificationMessage += (notificationMessage != "" ? ", " : "") + "UPS Discharged";
 				}
 			}
@@ -314,21 +312,21 @@ app.post('/ewelink', async (req, res) => {
 			locationString = water_pump_switch_device.online ? "at home" : "in the building";
 			console.log("No electricity or network " + locationString);
 			if (offlineOrNoElectricityCount != null && parseInt(offlineOrNoElectricityCount) == 6) {
-				dynamoDBUpdate.offlineOrNoElectricityCount = "0";
+				redisUpdate.offlineOrNoElectricityCount = "0";
 				console.log("No electricity or network for 30 minutes " + locationString);
 				utils.pushoverNotification("Nabih-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
 				utils.pushoverNotification("Rohan-iPhone", "No electricity or network for 30 minutes " + locationString, 'Electicity Update', 'vibrate');
 			} else if (offlineOrNoElectricityCount != null) {
 				let tmpVal = parseInt(offlineOrNoElectricityCount) + 1;
-				dynamoDBUpdate.offlineOrNoElectricityCount = tmpVal.toString();
+				redisUpdate.offlineOrNoElectricityCount = tmpVal.toString();
 			} else {
-				dynamoDBUpdate.offlineOrNoElectricityCount = "1";
+				redisUpdate.offlineOrNoElectricityCount = "1";
 			}
 		}
 
-		if (Object.keys(dynamoDBUpdate).length > 0) {
+		if (Object.keys(redisUpdate).length > 0) {
 			await redisClient.connect();
-			for (const [key, value] of Object.entries(dynamoDBUpdate)) {
+			for (const [key, value] of Object.entries(redisUpdate)) {
 				/*
 				const putParams = {TableName: 'ewelink', Item: {id: { S: key }, state: { N: value }}};
 				dynamodb.putItem(putParams, (err) => {if (err) {console.error('Error writing item:', err);}});
