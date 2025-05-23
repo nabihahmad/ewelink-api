@@ -331,7 +331,7 @@ app.post('/ewelink', async (req, res) => {
 				const putParams = {TableName: 'ewelink', Item: {id: { S: key }, state: { N: value }}};
 				dynamodb.putItem(putParams, (err) => {if (err) {console.error('Error writing item:', err);}});
 				*/
-				console.log("Set redis key: " + key, value);
+				// console.log("Set redis key: " + key, value);
   				await redisClient.set(key, value);
 			}
 			await redisClient.quit();
