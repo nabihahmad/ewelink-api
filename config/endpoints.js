@@ -87,6 +87,7 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	res.send(JSON.stringify(responseJson));
 });
 
+/*
 app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -144,6 +145,7 @@ app.get('/toggleWaterPumpOnElectricity', async (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
+*/
 
 app.post('/toggleUpsOnGenerator', async (req, res) => {
 	let responseJson = {};
