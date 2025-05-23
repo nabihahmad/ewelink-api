@@ -74,20 +74,6 @@ async function initRedisDefaultConfigParams() {
 	await redisClient.quit();
 }
 
-/*
-async function getDynamoDBConfigParam(key) {
-	const getValueParams = {TableName: 'ewelink', Key: {id: {S: key}}};
-	const getResultData = await dynamodb.getItem(getValueParams).promise();
-	return getResultData.Item.state.N;
-}
-
-async function getDynamoDBConfigParamAsList(key) {
-	const getValueParams = {TableName: 'ewelink', Key: {id: {S: key}}};
-	const getResultData = await dynamodb.getItem(getValueParams).promise();
-	return getResultData.Item.state.L;
-}
-*/
-
 function getEmailDomain(email) {
     const domainMatch = email.match(/@([^@]+)$/);
     if (domainMatch && domainMatch[1]) {

@@ -87,7 +87,6 @@ app.get('/toggleHeaterOnGenerator', async (req, res) => {
 	res.send(JSON.stringify(responseJson));
 });
 
-/*
 app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	let responseJson = {};
 	let requestBody = req.body;
@@ -95,8 +94,13 @@ app.post('/toggleWaterPumpOnGenerator', async (req, res) => {
 	console.log("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
 
 	// await electricityDB.set("config", {"enableWaterPumpOnGenerator": enableWaterPumpOnGenerator});
+	/*
 	const putWaterPumpOnGeneratorParams = {TableName: 'ewelink', Item: {id: { S: 'enableWaterPumpOnGenerator' }, state: { N: enableWaterPumpOnGenerator }}};
 	dynamodb.putItem(putWaterPumpOnGeneratorParams, (err) => {if (err) {console.error('Error writing enableWaterPumpOnGenerator:', err);}});
+	*/
+	await redisClient.connect();
+	await redisClient.set("enableWaterPumpOnGenerator", enableWaterPumpOnGenerator);
+	await redisClient.quit();
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -109,9 +113,14 @@ app.get('/toggleWaterPumpOnGenerator', async (req, res) => {
 	responseJson.status = "success";
 	// responseJson.enableWaterPumpOnGenerator = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnGenerator != null ? electricityConfig.props.enableWaterPumpOnGenerator : 0;
 	let enableWaterPumpOnGenerator = 0;
+	/*
 	const getEnableWaterPumpOnGeneratorParams = {TableName: 'ewelink', Key: {id: {S: 'enableWaterPumpOnGenerator'}}};
 	const getEnableWaterPumpOnGeneratorData = await dynamodb.getItem(getEnableWaterPumpOnGeneratorParams).promise();
 	enableWaterPumpOnGenerator = getEnableWaterPumpOnGeneratorData.Item.state.N;
+	*/
+	await redisClient.connect();
+	enableWaterPumpOnGenerator = await redisClient.get("enableWaterPumpOnGenerator");
+	await redisClient.quit();
 	responseJson.enableWaterPumpOnGenerator = enableWaterPumpOnGenerator;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -124,8 +133,13 @@ app.post('/toggleWaterPumpOnElectricity', async (req, res) => {
 	console.log("enableWaterPumpOnElectricity", enableWaterPumpOnElectricity);
 
 	// await electricityDB.set("config", {"enableWaterPumpOnElectricity": enableWaterPumpOnElectricity});
+	/*
 	const putWaterPumpOnElectricityParams = {TableName: 'ewelink', Item: {id: { S: 'enableWaterPumpOnElectricity' }, state: { N: enableWaterPumpOnElectricity }}};
 	dynamodb.putItem(putWaterPumpOnElectricityParams, (err) => {if (err) {console.error('Error writing enableWaterPumpOnElectricity:', err);}});
+	*/
+	await redisClient.connect();
+	await redisClient.set("enableWaterPumpOnElectricity", enableWaterPumpOnElectricity);
+	await redisClient.quit();
 	responseJson.status = "success";
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
@@ -138,14 +152,18 @@ app.get('/toggleWaterPumpOnElectricity', async (req, res) => {
 	responseJson.status = "success";
 	// responseJson.enableWaterPumpOnElectricity = electricityConfig != null && electricityConfig.props != null && electricityConfig.props.enableWaterPumpOnElectricity != null ? electricityConfig.props.enableWaterPumpOnElectricity : 0;
 	let enableWaterPumpOnElectricity = 0;
+	/*
 	const getEnableWaterPumpOnElectricityParams = {TableName: 'ewelink', Key: {id: {S: 'enableWaterPumpOnElectricity'}}};
 	const getEnableWaterPumpOnElectricityData = await dynamodb.getItem(getEnableWaterPumpOnElectricityParams).promise();
 	enableWaterPumpOnElectricity = getEnableWaterPumpOnElectricityData.Item.state.N;
+	*/
+	await redisClient.connect();
+	enableWaterPumpOnElectricity = await redisClient.get("enableWaterPumpOnElectricity");
+	await redisClient.quit();
 	responseJson.enableWaterPumpOnElectricity = enableWaterPumpOnElectricity;
 	res.setHeader('Content-Type', 'application/json');
 	res.send(JSON.stringify(responseJson));
 });
-*/
 
 app.post('/toggleUpsOnGenerator', async (req, res) => {
 	let responseJson = {};

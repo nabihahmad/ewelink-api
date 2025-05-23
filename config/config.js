@@ -5,20 +5,6 @@ redisClient = createClient({
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));
 
-/*
-AWS = require('aws-sdk');
-
-// Configure the AWS SDK with your credentials and the Frankfurt region
-AWS.config.update({
-    accessKeyId: process.env.DYNAMODB_AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.DYNAMODB_AWS_SECRET_ACCESS_KEY,
-    region: 'eu-central-1' // Frankfurt region
-});
-
-// Create a new DynamoDB instance
-dynamodb = new AWS.DynamoDB();
-*/
-
 POWER_MEASURING_SWITCH_DEVICEID=process.env.POWER_MEASURING_SWITCH_DEVICEID;
 POWER_MEASURING_DUALR3_DEVICEID=process.env.POWER_MEASURING_DUALR3_DEVICEID;
 ELECTRICITY_DEVICEID=process.env.ELECTRICITY_DEVICEID;

@@ -32,23 +32,6 @@ app.post('/ewelink', async (req, res) => {
 		// let automatedAC = await utils.getRedisConfigParamAsList('automatedAC');
 		let automatedAC = null; // TODO: change type to store properly in redis
 		let heaterTurnedOnAutomatically = await utils.getRedisConfigParam('heaterTurnedOnAutomatically');
-		// let upsInputOnGeneratorCount = await utils.getRedisConfigParam('upsInputOnGeneratorCount');
-		// let upsInputOnElectricityCount = await utils.getRedisConfigParam('upsInputOnElectricityCount');
-
-		/*
-		let enableHeaterOnGenerator = await utils.getDynamoDBConfigParam('enableHeaterOnGenerator');
-		let enableWaterPumpOnGenerator = await utils.getDynamoDBConfigParam('enableWaterPumpOnGenerator');
-		let enableWaterPumpOnElectricity = await utils.getDynamoDBConfigParam('enableWaterPumpOnElectricity');
-		let enableUpsOnGenerator = await utils.getDynamoDBConfigParam('enableUpsOnGenerator');
-		let lastState = await utils.getDynamoDBConfigParam('lastState');
-		let offlineOrNoElectricityCount = await utils.getDynamoDBConfigParam('offlineOrNoElectricityCount');
-		let lastRunAt = await utils.getDynamoDBConfigParam('lastRunAt');
-		let upsDischargedAt = await utils.getDynamoDBConfigParam('upsDischargedAt');
-		let automatedAC = await utils.getDynamoDBConfigParamAsList('automatedAC');
-		let heaterTurnedOnAutomatically = await utils.getDynamoDBConfigParam('heaterTurnedOnAutomatically');
-		// let upsInputOnGeneratorCount = await utils.getDynamoDBConfigParam('upsInputOnGeneratorCount');
-		// let upsInputOnElectricityCount = await utils.getDynamoDBConfigParam('upsInputOnElectricityCount');
-		*/
 
 		let diffMs = 0, diffMins = 0;
 		if (lastRunAt != null) {
@@ -169,7 +152,6 @@ app.post('/ewelink', async (req, res) => {
 
 			if (enableWaterPumpOnElectricity == 0) {
 				const water_pump_switch_device = await connection.getDevice(WATER_PUMP_DEVICEID);
-				// console.log("Switch WATER_PUMP_DEVICEID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
 				if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
 					const status = await connection.toggleDevice(WATER_PUMP_DEVICEID);
 					console.log("Toggle WATER_PUMP_DEVICEID", status);
@@ -180,17 +162,6 @@ app.post('/ewelink', async (req, res) => {
 
 			const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
 			if (ups_input_device.online && ups_output_device.online && (ups_input_device.params.switch == "off" || ups_output_device.params.switch == "off")) {
-				/*
-				if (upsInputOnElectricityCount != null && upsInputOnElectricityCount == 3) {
-					redisUpdate.upsInputOnElectricityCount = "0";
-					utils.pushoverNotification('Nabih-iPhone', 'Charge UPS on electricity', 'Electricity Info', 'pushover');
-				} else if (upsInputOnElectricityCount != null) {
-					let tmpVal = upsInputOnElectricityCount + 1;
-					redisUpdate.upsInputOnElectricityCount = tmpVal.toString();
-				} else {
-					redisUpdate.upsInputOnElectricityCount = "1";
-				}
-				*/
 				if (ups_output_device.params.switch == "off") {
 					await connection.toggleDevice(UPS_OUTPUT_DEVICEID);
 					await utils.sleep(2000);
@@ -228,7 +199,6 @@ app.post('/ewelink', async (req, res) => {
 
 			if (enableHeaterOnGenerator == 0 || heaterTurnedOnAutomatically == 1) {
 				const power_measuring_switch_device = await connection.getDevice(POWER_MEASURING_SWITCH_DEVICEID);
-				// console.log("Switch POWER_MEASURING_SWITCH_DEVICEID", power_measuring_switch_device.online ? power_measuring_switch_device.params.switch : "offline");
 				if (power_measuring_switch_device.online && power_measuring_switch_device.params.switch == "on" && heaterTurnedOnAutomatically == 1) {
 					const status = await connection.toggleDevice(POWER_MEASURING_SWITCH_DEVICEID);
 					console.log("Toggle POWER_MEASURING_SWITCH_DEVICEID", status);
@@ -236,7 +206,6 @@ app.post('/ewelink', async (req, res) => {
 				}
 
 				const power_measuring_dualr3_device = await connection.getDevice(POWER_MEASURING_DUALR3_DEVICEID);
-				// console.log("Switch POWER_MEASURING_DUALR3_DEVICEID", power_measuring_dualr3_device.online ? power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch : "offline");
 				if (power_measuring_dualr3_device.online && power_measuring_dualr3_device.params.switches[DUALR3_HEATER_SWITCH - 1].switch == "on" && heaterTurnedOnAutomatically == 1) {
 					const status = await connection.toggleDevice(POWER_MEASURING_DUALR3_DEVICEID, DUALR3_HEATER_SWITCH);
 					console.log("Toggle POWER_MEASURING_DUALR3_DEVICEID channel " + DUALR3_HEATER_SWITCH, status);
@@ -280,17 +249,6 @@ app.post('/ewelink', async (req, res) => {
 			if (ups_input_device.online && enableUpsOnGenerator == 0) {
 				const ups_output_device = await connection.getDevice(UPS_OUTPUT_DEVICEID);
 				if (ups_output_device.online && (ups_input_device.params.switch == "on" || ups_output_device.params.switch == "on")) {
-					/*
-					if (upsInputOnGeneratorCount != null && upsInputOnGeneratorCount == 3) {
-						redisUpdate.upsInputOnGeneratorCount = "0";
-						utils.pushoverNotification("Nabih-iPhone", 'UPS is charging on generator', 'Electicity Update', 'pushover');
-					} else if (upsInputOnGeneratorCount != null) {
-						let tmpVal = upsInputOnGeneratorCount + 1;
-						redisUpdate.upsInputOnGeneratorCount = tmpVal.toString();
-					} else {
-						redisUpdate.upsInputOnGeneratorCount = "1";
-					}
-					*/
 					if (ups_input_device.params.switch == "on") {
 						await connection.toggleDevice(UPS_INPUT_DEVICEID);
 						await utils.sleep(2000);
@@ -327,10 +285,6 @@ app.post('/ewelink', async (req, res) => {
 		if (Object.keys(redisUpdate).length > 0) {
 			await redisClient.connect();
 			for (const [key, value] of Object.entries(redisUpdate)) {
-				/*
-				const putParams = {TableName: 'ewelink', Item: {id: { S: key }, state: { N: value }}};
-				dynamodb.putItem(putParams, (err) => {if (err) {console.error('Error writing item:', err);}});
-				*/
 				// console.log("Set redis key: " + key, value);
   				await redisClient.set(key, value);
 			}
