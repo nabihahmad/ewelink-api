@@ -1,3 +1,11 @@
+const { createClient } = require('redis');
+redisClient = createClient({
+  url: process.env.REDIS_URL
+});
+
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+
+/*
 AWS = require('aws-sdk');
 
 // Configure the AWS SDK with your credentials and the Frankfurt region
@@ -7,15 +15,9 @@ AWS.config.update({
     region: 'eu-central-1' // Frankfurt region
 });
 
-const { createClient } = require('redis');
-redisClient = createClient({
-  url: process.env.REDIS_URL
-});
-
-redisClient.on('error', (err) => console.error('Redis Client Error', err));
-
 // Create a new DynamoDB instance
 dynamodb = new AWS.DynamoDB();
+*/
 
 POWER_MEASURING_SWITCH_DEVICEID=process.env.POWER_MEASURING_SWITCH_DEVICEID;
 POWER_MEASURING_DUALR3_DEVICEID=process.env.POWER_MEASURING_DUALR3_DEVICEID;
