@@ -1,0 +1,10 @@
+{
+  "eslint.format.enable": true,
+  "eslint.run": "onSave",
+  "eslint.codeAction.disableRuleComment": {
+    "commentStyle": "block"
+  },
+  "eslint.codeActionsOnSave.rules": null,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
