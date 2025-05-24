@@ -283,7 +283,7 @@ exports.handleMain = async (req, res) => {
         (hourOfDay < 14 || hourOfDay > 16)
       ) {
         const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-        console.log("Switch waterPumpDeviceID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
+        // console.log("Switch waterPumpDeviceID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
         if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
           const status = await connection.toggleDevice(waterPumpDeviceID);
           console.log("Toggle waterPumpDeviceID", status);
@@ -292,7 +292,7 @@ exports.handleMain = async (req, res) => {
         }
       } else if (enableWaterPumpOnGenerator == 1) {
         const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-        console.log("Switch waterPumpDeviceID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
+        // console.log("Switch waterPumpDeviceID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
         if (
           ((hourOfDay >= 0 && hourOfDay <= 2) ||
             (hourOfDay >= 5 && hourOfDay <= 6) ||
