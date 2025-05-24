@@ -27,7 +27,7 @@ const messages = require("../utils/messages");
 exports.handleMain = async (req, res) => {
   let responseJson = {};
   let redisUpdate = {};
-  if (disableScript == "false") {
+  if (!disableScript) {
     var beirutTimezone = new Date().getTime() + 120 * 60000;
     const nowTime = new Date(beirutTimezone);
     let hourOfDay = nowTime.getHours();

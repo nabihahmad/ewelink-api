@@ -2,7 +2,8 @@ require("dotenv").config();
 
 module.exports = {
   port: process.env.PORT || 3000,
-  disableScript: process.env.DISABLE_SCRIPT,
+  disableScript: process.env.DISABLE_SCRIPT == "true",
+  enableDebugRoutes: process.env.ENABLE_DEBUG_ROUTES == "true",
 
   ewelinkEmail: process.env.EWELINK_EMAIL,
   ewelinkPassword: process.env.EWELINK_PASSWORD,
