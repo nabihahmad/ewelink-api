@@ -10,6 +10,7 @@ const {
 const pushover = require("../services/pushover");
 const ewelink = require("ewelink-api");
 const atob = require("atob");
+const { U_NABIH } = require("../constants/enums");
 
 exports.connect = async (req, res) => {
   let responseJson = {};
@@ -63,16 +64,16 @@ exports.connect = async (req, res) => {
 exports.notification = async (req, res) => {
   let responseJson = {};
   let requestBody = req.body;
-  let device = requestBody.device != null ? requestBody.device : "";
   let message = requestBody.message != null ? requestBody.message : "";
   let title = requestBody.title != null ? requestBody.title : "";
   let sound = requestBody.sound != null ? requestBody.sound : "";
-  console.log("device", device);
   console.log("message", message);
   console.log("title", title);
   console.log("sound", sound);
+  const referrer = req.get("referrer");
+  console.log("referrer", referrer);
 
-  await pushover.sendPushNotification(device, message, title, sound);
+  await pushover.sendPushNotification(U_NABIH, message, title, sound);
   responseJson.status = "success";
   res.setHeader("Content-Type", "application/json");
   res.send(JSON.stringify(responseJson));

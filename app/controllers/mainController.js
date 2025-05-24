@@ -32,7 +32,7 @@ exports.handleMain = async (req, res) => {
     const nowTime = new Date(beirutTimezone);
     let hourOfDay = nowTime.getHours();
     // let dayOfWeek = nowTime.getDay();
-    // const referrer = req.get("referrer");
+    const referrer = req.get("referrer");
 
     let lastRunAt = await redisModel.getParam("lastRunAt");
     if (lastRunAt == null) {
@@ -64,7 +64,7 @@ exports.handleMain = async (req, res) => {
         );
       }
     }
-    console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins);
+    console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins, referrer);
     redisUpdate.lastRunAt = nowTime.getTime().toString();
 
     let loginMethod = helpers.getEmailDomain(ewelinkEmail) + " + cred";
@@ -125,7 +125,7 @@ exports.handleMain = async (req, res) => {
         console.log("logElectricity 1 for state", lastState);
         redisUpdate.lastState = "1";
         notificationMessage = messages.get("electricity-on", "en");
-        pushover.sendPushNotification(U_ROHAN, notificationMessage, "Electricity Info", "pushover");
+        pushover.sendPushNotification(U_ROHAN, notificationMessage, "push-notification-title", "pushover");
         pushover.broadcastPushNotification(USERS_ARABIC, "electricity-on", "push-notification-title", "pushover");
       }
       redisUpdate.offlineOrNoElectricityCount = "0";
