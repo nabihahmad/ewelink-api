@@ -35,4 +35,4 @@ const USERS_ARABIC = {
   U_TAREQ,
 };
 
-export { U_NABIH, U_ROHAN, U_AMIR, USERS_ARABIC };
+module.exports = { U_NABIH, U_ROHAN, U_AMIR, USERS_ARABIC };

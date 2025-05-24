@@ -1,5 +1,5 @@
-import en from "../locales/en.json";
-import ar from "../locales/ar.json";
+const en = require("../locales/en.json");
+const ar = require("../locales/ar.json");
 
 const languages = {
   en,
@@ -11,4 +11,4 @@ const get = (key, lang = "en") => {
   return messages[key] || key;
 };
 
-export default { get };
+module.exports = { get };
