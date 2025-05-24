@@ -48,7 +48,7 @@ async function sendPushNotification(user, messageKey, titleKey, sound) {
 async function broadcastPushNotification(pushoverUsers, messageKey, titleKey, sound) {
   for (const user of pushoverUsers) {
     try {
-      await sendPushNotification(user.pushoverName, messageKey, titleKey, sound);
+      await sendPushNotification(user, messageKey, titleKey, sound);
     } catch (error) {
       console.error(`Error sending push notification to ${user}:`, error);
     }
