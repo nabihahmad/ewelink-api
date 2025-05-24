@@ -16,11 +16,13 @@ const {
   upsOutputDeviceID,
   automatedHeater,
 } = require("../../config/env");
+const { U_NABIH, U_ROHAN, U_AMIR, USERS_ARABIC } = require("../constants/enums");
 const helpers = require("../utils/helpers");
 const redisModel = require("../models/redis");
 const pushover = require("../services/pushover");
 const ewelink = require("ewelink-api");
 const atob = require("atob");
+const messages = require("../utils/messages");
 
 exports.handleMain = async (req, res) => {
   let responseJson = {};
@@ -35,7 +37,7 @@ exports.handleMain = async (req, res) => {
     let lastRunAt = await redisModel.getParam("lastRunAt");
     if (lastRunAt == null) {
       await redisModel.initRedisDefaultConfigParams();
-      pushover.sendPushNotification("Nabih-iPhone", "Init Redis Config", "Electicity Update", "siren");
+      pushover.sendPushNotification(U_NABIH, "Init Redis Config", "push-notification-title", "siren");
     }
     let enableHeaterOnGenerator = await redisModel.getParam("enableHeaterOnGenerator");
     let enableWaterPumpOnGenerator = await redisModel.getParam("enableWaterPumpOnGenerator");
@@ -55,9 +57,9 @@ exports.handleMain = async (req, res) => {
       diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); // minutes
       if (diffMins > 10) {
         pushover.sendPushNotification(
-          "Nabih-iPhone",
+          U_NABIH,
           "Inoperative: scheduler not working " + diffMins + ", " + lastRunAt + ", " + nowTime,
-          "Electicity Update",
+          "push-notification-title",
           "siren",
         );
       }
@@ -91,7 +93,7 @@ exports.handleMain = async (req, res) => {
         electricity_device = await connection.getDevice(electricityDeviceID);
         if (electricity_device.error == 406) {
           loginMethod = "failed";
-          pushover.sendPushNotification("Nabih-iPhone", "inoperative: authentication failed", "ERROR", "none");
+          pushover.sendPushNotification(U_NABIH, "inoperative: authentication failed", "ERROR", "none");
           responseJson.status = "failed";
           res.setHeader("Content-Type", "application/json");
           res.send(JSON.stringify(responseJson));
@@ -122,12 +124,9 @@ exports.handleMain = async (req, res) => {
       if (lastState == 0) {
         console.log("logElectricity 1 for state", lastState);
         redisUpdate.lastState = "1";
-        notificationMessage = "Electricity is on";
-        pushover.sendPushNotification("Rohan-iPhone", notificationMessage, "Electricity Info", "pushover");
-        pushover.sendPushNotification("Asmahan-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", "pushover");
-        pushover.sendPushNotification("Ahmad-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", "pushover");
-        pushover.sendPushNotification("Amir-Android", "كهرباء الدولة متوفرة", "حالة الكهرباء", "pushover");
-        pushover.sendPushNotification("Tareq-iPhone", "كهرباء الدولة متوفرة", "حالة الكهرباء", "pushover");
+        notificationMessage = messages.get("electricity-on", "en");
+        pushover.sendPushNotification(U_ROHAN, notificationMessage, "Electricity Info", "pushover");
+        pushover.broadcastPushNotification(USERS_ARABIC, "electricity-on", "push-notification-title", "pushover");
       }
       redisUpdate.offlineOrNoElectricityCount = "0";
 
@@ -208,7 +207,7 @@ exports.handleMain = async (req, res) => {
           const status = await connection.toggleDevice(waterPumpDeviceID);
           console.log("Toggle waterPumpDeviceID", status);
           notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
-          pushover.sendPushNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", "bike");
+          pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
         }
       }
 
@@ -238,7 +237,7 @@ exports.handleMain = async (req, res) => {
         redisUpdate.upsDischargedAt = "0";
       }
       if (notificationMessage != "") {
-        pushover.sendPushNotification("Nabih-iPhone", notificationMessage, "Electicity Update", "pushover");
+        pushover.sendPushNotification(U_NABIH, notificationMessage, "push-notification-title", "pushover");
       }
     } else if (!electricity_device.online && ups_input_device.online && four_ch_pro_r3_device.online) {
       responseJson.online = true;
@@ -248,12 +247,9 @@ exports.handleMain = async (req, res) => {
       if (lastState == 1) {
         console.log("logElectricity 0 for state", lastState);
         redisUpdate.lastState = "0";
-        notificationMessage = "Electricity is off";
-        pushover.sendPushNotification("Rohan-iPhone", notificationMessage, "Electicity Update", "gamelan");
-        pushover.sendPushNotification("Asmahan-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", "gamelan");
-        pushover.sendPushNotification("Ahmad-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", "gamelan");
-        pushover.sendPushNotification("Amir-Android", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", "gamelan");
-        pushover.sendPushNotification("Tareq-iPhone", "كهرباء الدولة غير متوفرة", "حالة الكهرباء", "gamelan");
+        notificationMessage = messages.get("electricity-off", "en");
+        pushover.sendPushNotification(U_ROHAN, notificationMessage, "push-notification-title", "gamelan");
+        pushover.broadcastPushNotification(USERS_ARABIC, "electricity-off", "push-notification-title", "gamelan");
       }
 
       if (enableHeaterOnGenerator == 0 || heaterTurnedOnAutomatically == 1) {
@@ -292,7 +288,7 @@ exports.handleMain = async (req, res) => {
           const status = await connection.toggleDevice(waterPumpDeviceID);
           console.log("Toggle waterPumpDeviceID", status);
           notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
-          pushover.sendPushNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", "bike");
+          pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
         }
       } else if (enableWaterPumpOnGenerator == 1) {
         const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
@@ -308,7 +304,7 @@ exports.handleMain = async (req, res) => {
           const status = await connection.toggleDevice(waterPumpDeviceID);
           console.log("Toggle waterPumpDeviceID", status);
           notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump on";
-          pushover.sendPushNotification("Amir-Android", "تشغيل طرمبة الماء", "حالة الكهرباء", "bike");
+          pushover.sendPushNotification(U_AMIR, "تشغيل طرمبة الماء", "push-notification-title", "bike");
         } else if (
           (hourOfDay < 0 ||
             (hourOfDay > 2 && hourOfDay < 5) ||
@@ -321,7 +317,7 @@ exports.handleMain = async (req, res) => {
           const status = await connection.toggleDevice(waterPumpDeviceID);
           console.log("Toggle waterPumpDeviceID", status);
           notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
-          pushover.sendPushNotification("Amir-Android", "إطفاء طرمبة الماء", "حالة الكهرباء", "bike");
+          pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
         }
       }
 
@@ -348,7 +344,7 @@ exports.handleMain = async (req, res) => {
         }
       }
       if (notificationMessage != "") {
-        pushover.sendPushNotification("Nabih-iPhone", notificationMessage, "Electicity Update", "gamelan");
+        pushover.sendPushNotification(U_NABIH, notificationMessage, "push-notification-title", "gamelan");
       }
     } else if (!electricity_device.online && !ups_input_device.online && !four_ch_pro_r3_device.online) {
       responseJson.online = false;
@@ -359,15 +355,15 @@ exports.handleMain = async (req, res) => {
         redisUpdate.offlineOrNoElectricityCount = "0";
         console.log("No electricity or network for 30 minutes " + locationString);
         pushover.sendPushNotification(
-          "Nabih-iPhone",
+          U_NABIH,
           "No electricity or network for 30 minutes " + locationString,
-          "Electicity Update",
+          "push-notification-title",
           "vibrate",
         );
         pushover.sendPushNotification(
-          "Rohan-iPhone",
+          U_ROHAN,
           "No electricity or network for 30 minutes " + locationString,
-          "Electicity Update",
+          "push-notification-title",
           "vibrate",
         );
       } else if (offlineOrNoElectricityCount != null) {

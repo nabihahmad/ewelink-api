@@ -1,10 +1,14 @@
 const https = require("https");
 const { pushoverToken, pushoverUser } = require("../../config/env");
+const messages = require("../utils/messages");
 
-async function sendPushNotification(device, message, title, sound) {
+async function sendPushNotification(user, messageKey, titleKey, sound) {
   const data = JSON.stringify("{}");
 
   if (sound == null || sound == "") sound = "pushover";
+
+  let message = messages.get(messageKey, user.lang || "en");
+  let title = messages.get(titleKey, user.lang || "en");
 
   const postOptions = {
     hostname: "api.pushover.net",
@@ -15,7 +19,7 @@ async function sendPushNotification(device, message, title, sound) {
       "&user=" +
       pushoverUser +
       "&device=" +
-      encodeURIComponent(device) +
+      encodeURIComponent(user.pushoverName) +
       "&title=" +
       encodeURIComponent(title) +
       "&message=" +
@@ -41,6 +45,17 @@ async function sendPushNotification(device, message, title, sound) {
   req.end();
 }
 
+async function broadcastPushNotification(pushoverUsers, messageKey, titleKey, sound) {
+  for (const user of pushoverUsers) {
+    try {
+      await sendPushNotification(user.pushoverName, messageKey, titleKey, sound);
+    } catch (error) {
+      console.error(`Error sending push notification to ${user}:`, error);
+    }
+  }
+}
+
 module.exports = {
   sendPushNotification,
+  broadcastPushNotification,
 };
