@@ -70,8 +70,7 @@ exports.notification = async (req, res) => {
   console.log("message", message);
   console.log("title", title);
   console.log("sound", sound);
-  const referrer = req.get("referrer");
-  console.log("referrer", referrer);
+  console.log("user-agent", req.get("user-agent"));
 
   await pushover.sendPushNotification(U_NABIH, message, title, sound);
   responseJson.status = "success";

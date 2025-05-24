@@ -32,7 +32,7 @@ exports.handleMain = async (req, res) => {
     const nowTime = new Date(beirutTimezone);
     let hourOfDay = nowTime.getHours();
     // let dayOfWeek = nowTime.getDay();
-    const referrer = req.get("referrer");
+    const userAgent = req.get("user-agent");
 
     let lastRunAt = await redisModel.getParam("lastRunAt");
     if (lastRunAt == null) {
@@ -64,7 +64,7 @@ exports.handleMain = async (req, res) => {
         );
       }
     }
-    console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins, referrer);
+    console.log("Schedule status:", lastRunAt, nowTime.getTime(), diffMs, diffMins, userAgent);
     redisUpdate.lastRunAt = nowTime.getTime().toString();
 
     let loginMethod = helpers.getEmailDomain(ewelinkEmail) + " + cred";
