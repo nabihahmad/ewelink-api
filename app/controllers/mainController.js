@@ -42,7 +42,7 @@ exports.handleMain = async (req, res) => {
     let enableHeaterOnGenerator = await redisModel.getParam("enableHeaterOnGenerator");
     let enableWaterPumpOnGenerator = await redisModel.getParam("enableWaterPumpOnGenerator");
     let enableWaterPumpOnElectricity = await redisModel.getParam("enableWaterPumpOnElectricity");
-    let enableUpsOnGenerator = 1; //await redisModel.getParam("enableUpsOnGenerator");
+    let enableUpsOnGenerator = await redisModel.getParam("enableUpsOnGenerator");
     let lastState = await redisModel.getParam("lastState");
     let offlineOrNoElectricityCount = await redisModel.getParam("offlineOrNoElectricityCount");
     let upsDischargedAt = await redisModel.getParam("upsDischargedAt");
