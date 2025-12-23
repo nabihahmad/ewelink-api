@@ -28,6 +28,6 @@ const U_TAREQ = {
   lang: "ar",
 };
 
-const USERS_ARABIC = [U_ASMAHAN, U_AHMAD, U_AMIR];
+const USERS_ARABIC = [U_ASMAHAN, U_AMIR];
 
 module.exports = { U_NABIH, U_ROHAN, U_AMIR, USERS_ARABIC };
