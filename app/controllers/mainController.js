@@ -261,6 +261,7 @@ exports.handleMain = async (req, res) => {
         ) {
           const status = await connection.toggleDevice(powerMeasuringSwitchDeviceID);
           console.log("Toggle powerMeasuringSwitchDeviceID", status);
+          notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated main heater off";
           redisUpdate.heaterTurnedOnAutomatically = "0";
         }
 
@@ -272,6 +273,7 @@ exports.handleMain = async (req, res) => {
         ) {
           const status = await connection.toggleDevice(powerMeasuringDualR3DeviceID, dualR3HeaterSwitch);
           console.log("Toggle powerMeasuringDualR3DeviceID channel " + dualR3HeaterSwitch, status);
+          notificationMessage += (notificationMessage != "" ? ", " : "") + "Automated kitchen heater off";
           redisUpdate.heaterTurnedOnAutomatically = "0";
         }
       }
