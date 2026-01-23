@@ -6,5 +6,7 @@ router.get("/toggleHeaterOnGenerator", settingsController.getToggleHeaterOnGener
 router.post("/toggleHeaterOnGenerator", settingsController.toggleHeaterOnGenerator);
 router.get("/toggleUpsOnGenerator", settingsController.getToggleUpsOnGenerator);
 router.post("/toggleUpsOnGenerator", settingsController.toggleUpsOnGenerator);
+router.get("/toggleMasterSwitch", settingsController.getToggleMasterSwitch);
+router.post("/toggleMasterSwitch", settingsController.toggleMasterSwitch);
 
 module.exports = router;

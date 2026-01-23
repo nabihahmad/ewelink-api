@@ -24,6 +24,7 @@ module.exports = {
 
   async initRedisDefaultConfigParams() {
     await redis.connect();
+    await redis.set("enableMasterSwitch", 1);
     await redis.set("lastState", 0);
     await redis.set("enableHeaterOnGenerator", 0);
     await redis.set("enableWaterPumpOnGenerator", 0);

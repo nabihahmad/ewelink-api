@@ -1,5 +1,24 @@
 const redisModel = require("../models/redis");
 
+exports.getToggleMasterSwitch = async (req, res) => {
+  let responseJson = {};
+  let enableMasterSwitch = await redisModel.getParam("enableMasterSwitch");
+  responseJson.status = "success";
+  responseJson.enableMasterSwitch = enableMasterSwitch;
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(responseJson));
+};
+
+exports.toggleMasterSwitch = async (req, res) => {
+  let responseJson = {};
+  let requestBody = req.body;
+  let enableMasterSwitch = requestBody.enableMasterSwitch != null ? requestBody.enableMasterSwitch : "0";
+  await redisModel.setParam("enableMasterSwitch", enableMasterSwitch);
+  responseJson.status = "success";
+  res.setHeader("Content-Type", "application/json");
+  res.send(JSON.stringify(responseJson));
+};
+
 exports.getToggleHeaterOnGenerator = async (req, res) => {
   let responseJson = {};
   let enableHeaterOnGenerator = await redisModel.getParam("enableHeaterOnGenerator");
