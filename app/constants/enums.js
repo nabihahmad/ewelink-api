@@ -13,18 +13,8 @@ const U_ASMAHAN = {
   lang: "ar",
 };
 
-const U_AHMAD = {
-  pushoverName: "Ahmad-Android",
-  lang: "ar",
-};
-
 const U_AMIR = {
   pushoverName: "Amir-Android",
-  lang: "ar",
-};
-
-const U_TAREQ = {
-  pushoverName: "Tareq-iPhone",
   lang: "ar",
 };
 

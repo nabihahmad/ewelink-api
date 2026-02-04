@@ -11,12 +11,15 @@ const {
   powerMeasuringDualR3DeviceID,
   dualR3HeaterSwitch,
   dualR3KidsACSwitch,
-  waterCoolerDeviceID,
-  waterPumpDeviceID,
+  // waterCoolerDeviceID,
   upsOutputDeviceID,
   automatedHeater,
+  buildingEntranceTimerMiniDeviceID,
+  buildingEntranceInteriorMiniDeviceID,
+  buildingEntranceGateMiniDeviceID,
+  buildingGateFourCHPRODeviceID,
 } = require("../../config/env");
-const { U_NABIH, U_ROHAN, U_AMIR, USERS_ARABIC } = require("../constants/enums");
+const { U_NABIH, U_ROHAN, USERS_ARABIC } = require("../constants/enums");
 const helpers = require("../utils/helpers");
 const redisModel = require("../models/redis");
 const pushover = require("../services/pushover");
@@ -39,6 +42,7 @@ exports.handleMain = async (req, res) => {
     if (lastRunAt == null) {
       await redisModel.initRedisDefaultConfigParams();
       pushover.sendPushNotification(U_NABIH, "Init Redis Config", "push-notification-title", "siren");
+      lastRunAt = await redisModel.getParam("lastRunAt");
     }
     let enableHeaterOnGenerator = await redisModel.getParam("enableHeaterOnGenerator");
     let enableWaterPumpOnGenerator = await redisModel.getParam("enableWaterPumpOnGenerator");
@@ -118,6 +122,15 @@ exports.handleMain = async (req, res) => {
     const ups_input_device = await connection.getDevice(upsInputDeviceID);
 
     let notificationMessage = "";
+    let online = electricity_device.online;
+    let offline = false,
+      noElectricity = false;
+    if (!online) {
+      offline = !electricity_device.online && ups_input_device.online && four_ch_pro_r3_device.online;
+      if (!offline) {
+        noElectricity = !electricity_device.online && !ups_input_device.online && !four_ch_pro_r3_device.online;
+      }
+    }
     if (electricity_device.online) {
       responseJson.online = true;
       responseJson.electricity = true;
@@ -192,6 +205,7 @@ exports.handleMain = async (req, res) => {
           }
         }
 
+        /*
         if (hourOfDay >= 7 && hourOfDay < 22) {
           const water_cooler_switch_device = await connection.getDevice(waterCoolerDeviceID);
           if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "off") {
@@ -200,8 +214,10 @@ exports.handleMain = async (req, res) => {
             notificationMessage += (notificationMessage != "" ? ", " : "") + "Water cooler on";
           }
         }
+        */
       }
 
+      /*
       if (enableWaterPumpOnElectricity == 0) {
         const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
         if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
@@ -211,6 +227,7 @@ exports.handleMain = async (req, res) => {
           pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
         }
       }
+      */
 
       const ups_output_device = await connection.getDevice(upsOutputDeviceID);
       if (
@@ -240,7 +257,7 @@ exports.handleMain = async (req, res) => {
       if (notificationMessage != "") {
         pushover.sendPushNotification(U_NABIH, notificationMessage, "push-notification-title", "pushover");
       }
-    } else if (!electricity_device.online && ups_input_device.online && four_ch_pro_r3_device.online) {
+    } else if (offline) {
       responseJson.online = true;
       responseJson.electricity = false;
       redisUpdate.offlineOrNoElectricityCount = "0";
@@ -279,6 +296,7 @@ exports.handleMain = async (req, res) => {
         }
       }
 
+      /*
       if (
         enableWaterPumpOnGenerator == 0 &&
         (hourOfDay < 4 || hourOfDay > 6) &&
@@ -323,13 +341,16 @@ exports.handleMain = async (req, res) => {
           pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
         }
       }
+      */
 
+      /*
       const water_cooler_switch_device = await connection.getDevice(waterCoolerDeviceID);
       if (water_cooler_switch_device.online && water_cooler_switch_device.params.switch == "on") {
         const status = await connection.toggleDevice(waterCoolerDeviceID);
         console.log("Toggle waterCoolerDeviceID", status);
         notificationMessage += (notificationMessage != "" ? ", " : "") + "Water cooler off";
       }
+      */
 
       const ups_input_device = await connection.getDevice(upsInputDeviceID);
       if (ups_input_device.online && enableUpsOnGenerator == 0) {
@@ -349,10 +370,22 @@ exports.handleMain = async (req, res) => {
       if (notificationMessage != "") {
         pushover.sendPushNotification(U_NABIH, notificationMessage, "push-notification-title", "gamelan");
       }
-    } else if (!electricity_device.online && !ups_input_device.online && !four_ch_pro_r3_device.online) {
+    } else if (noElectricity) {
       responseJson.online = false;
-      const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-      let locationString = water_pump_switch_device.online ? "at home" : "in the building";
+      let locationString = "at home";
+      const buildingEntranceGateMiniDevice = await connection.getDevice(buildingEntranceGateMiniDeviceID);
+      if (!buildingEntranceGateMiniDevice.online) {
+        const buildingEntranceInteriorMiniDevice = await connection.getDevice(buildingEntranceInteriorMiniDeviceID);
+        if (!buildingEntranceInteriorMiniDevice.online) {
+          const buildingEntranceTimerMiniDevice = await connection.getDevice(buildingEntranceTimerMiniDeviceID);
+          if (!buildingEntranceTimerMiniDevice.online) {
+            const buildingGateFourCHPRODevice = await connection.getDevice(buildingGateFourCHPRODeviceID);
+            if (!buildingGateFourCHPRODevice.online) {
+              locationString = "in the building";
+            }
+          }
+        }
+      }
       console.log("No electricity or network " + locationString);
       if (offlineOrNoElectricityCount != null && parseInt(offlineOrNoElectricityCount) == 6) {
         redisUpdate.offlineOrNoElectricityCount = "0";
