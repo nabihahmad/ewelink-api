@@ -4,7 +4,6 @@ const {
   ewelinkAppID,
   ewelinkAppSecret,
   electricityDeviceID,
-  waterPumpDeviceID,
   buildingEntranceInteriorLightingDeviceID,
 } = require("../../config/env");
 const pushover = require("../services/pushover");
@@ -51,8 +50,6 @@ exports.connect = async (req, res) => {
       }
     }
   }
-  const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-  console.log(water_pump_switch_device.online, water_pump_switch_device.params.switch);
   const building_entrance_interior_lighting_device = await connection.getDevice(buildingEntranceInteriorLightingDeviceID);
   console.log(building_entrance_interior_lighting_device.online);
   if (building_entrance_interior_lighting_device.online) console.log(building_entrance_interior_lighting_device.params.switch);

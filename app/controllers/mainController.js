@@ -45,8 +45,6 @@ exports.handleMain = async (req, res) => {
       lastRunAt = await redisModel.getParam("lastRunAt");
     }
     let enableHeaterOnGenerator = await redisModel.getParam("enableHeaterOnGenerator");
-    let enableWaterPumpOnGenerator = await redisModel.getParam("enableWaterPumpOnGenerator");
-    let enableWaterPumpOnElectricity = await redisModel.getParam("enableWaterPumpOnElectricity");
     let enableUpsOnGenerator = await redisModel.getParam("enableUpsOnGenerator");
     let lastState = await redisModel.getParam("lastState");
     let offlineOrNoElectricityCount = await redisModel.getParam("offlineOrNoElectricityCount");
@@ -110,8 +108,6 @@ exports.handleMain = async (req, res) => {
       "Running mode:",
       hourOfDay,
       enableHeaterOnGenerator,
-      enableWaterPumpOnGenerator,
-      enableWaterPumpOnElectricity,
       enableUpsOnGenerator,
       lastState,
       offlineOrNoElectricityCount,
@@ -217,18 +213,6 @@ exports.handleMain = async (req, res) => {
         */
       }
 
-      /*
-      if (enableWaterPumpOnElectricity == 0) {
-        const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-        if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
-          const status = await connection.toggleDevice(waterPumpDeviceID);
-          console.log("Toggle waterPumpDeviceID", status);
-          notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
-          pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
-        }
-      }
-      */
-
       const ups_output_device = await connection.getDevice(upsOutputDeviceID);
       if (
         ups_input_device.online &&
@@ -295,53 +279,6 @@ exports.handleMain = async (req, res) => {
           redisUpdate.heaterTurnedOnAutomatically = "0";
         }
       }
-
-      /*
-      if (
-        enableWaterPumpOnGenerator == 0 &&
-        (hourOfDay < 4 || hourOfDay > 6) &&
-        (hourOfDay < 10 || hourOfDay > 12) &&
-        (hourOfDay < 14 || hourOfDay > 16)
-      ) {
-        const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-        // console.log("Switch waterPumpDeviceID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
-        if (water_pump_switch_device.online && water_pump_switch_device.params.switch == "on") {
-          const status = await connection.toggleDevice(waterPumpDeviceID);
-          console.log("Toggle waterPumpDeviceID", status);
-          notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
-          pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
-        }
-      } else if (enableWaterPumpOnGenerator == 1) {
-        const water_pump_switch_device = await connection.getDevice(waterPumpDeviceID);
-        // console.log("Switch waterPumpDeviceID", water_pump_switch_device.online ? water_pump_switch_device.params.switch : "offline");
-        if (
-          ((hourOfDay >= 0 && hourOfDay <= 2) ||
-            (hourOfDay >= 5 && hourOfDay <= 6) ||
-            (hourOfDay >= 9 && hourOfDay <= 11) ||
-            (hourOfDay >= 13 && hourOfDay <= 15)) &&
-          water_pump_switch_device.online &&
-          water_pump_switch_device.params.switch == "off"
-        ) {
-          const status = await connection.toggleDevice(waterPumpDeviceID);
-          console.log("Toggle waterPumpDeviceID", status);
-          notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump on";
-          pushover.sendPushNotification(U_AMIR, "تشغيل طرمبة الماء", "push-notification-title", "bike");
-        } else if (
-          (hourOfDay < 0 ||
-            (hourOfDay > 2 && hourOfDay < 5) ||
-            (hourOfDay > 6 && hourOfDay < 9) ||
-            (hourOfDay > 11 && hourOfDay < 13) ||
-            hourOfDay > 15) &&
-          water_pump_switch_device.online &&
-          water_pump_switch_device.params.switch == "on"
-        ) {
-          const status = await connection.toggleDevice(waterPumpDeviceID);
-          console.log("Toggle waterPumpDeviceID", status);
-          notificationMessage += (notificationMessage != "" ? ", " : "") + "Water pump off";
-          pushover.sendPushNotification(U_AMIR, "إطفاء طرمبة الماء", "push-notification-title", "bike");
-        }
-      }
-      */
 
       /*
       const water_cooler_switch_device = await connection.getDevice(waterCoolerDeviceID);
